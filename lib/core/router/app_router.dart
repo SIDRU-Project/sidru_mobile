@@ -7,6 +7,7 @@ import '../../features/auth/presentation/auth_provider.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/sessions/data/models/recycling_session.dart';
 import '../../features/sessions/presentation/history/history_screen.dart';
 import '../../features/sessions/presentation/history/session_detail_screen.dart';
@@ -40,20 +41,27 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     refreshListenable: authNotifier,
-    initialLocation: RouteNames.login,
+    initialLocation: RouteNames.onboarding,
     debugLogDiagnostics: false,
     redirect: (context, state) {
       final authState = authNotifier.state;
       if (authState.isInitializing) return null;
       final isAuth = authState.isAuthenticated;
       final loc = state.matchedLocation;
-      final isOnAuthRoute =
-          loc == RouteNames.login || loc == RouteNames.register;
-      if (!isAuth && !isOnAuthRoute) return RouteNames.login;
-      if (isAuth && isOnAuthRoute) return RouteNames.home;
+      // Rutas públicas accesibles sin sesión.
+      final isPublicRoute =
+          loc == RouteNames.onboarding ||
+          loc == RouteNames.login ||
+          loc == RouteNames.register;
+      if (!isAuth && !isPublicRoute) return RouteNames.onboarding;
+      if (isAuth && isPublicRoute) return RouteNames.home;
       return null;
     },
     routes: [
+      GoRoute(
+        path: RouteNames.onboarding,
+        builder: (_, __) => const OnboardingScreen(),
+      ),
       GoRoute(path: RouteNames.login, builder: (_, __) => const LoginScreen()),
       GoRoute(
         path: RouteNames.register,

@@ -60,8 +60,31 @@ dev_dependencies:
   freezed: ^2.5.2
   json_serializable: ^6.8.0
 
+  # Generación del ícono de la app y la splash a partir del logo
+  flutter_launcher_icons: ^0.14.2
+  flutter_native_splash: ^2.4.4
+
 flutter:
   uses-material-design: true
 
   assets:
     - .env
+    - assets/images/
+
+# ── Ícono de la app (genera mipmaps Android + assets iOS desde el logo) ──
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/icon_legacy.png"
+  adaptive_icon_background: "#0A0E1A"
+  adaptive_icon_foreground: "assets/images/icon_foreground.png"
+  remove_alpha_ios: true
+  background_color_ios: "#0A0E1A"
+
+# ── Splash de arranque (logo sobre el azul de marca) ──
+flutter_native_splash:
+  color: "#0A0E1A"
+  image: assets/images/logo_mark.png
+  android_12:
+    color: "#0A0E1A"
+    image: assets/images/logo_mark.png
