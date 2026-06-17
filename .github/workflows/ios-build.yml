@@ -36,11 +36,16 @@ jobs:
           APP_NAME=SIDRU
           EOF
 
-      # Firebase (firebase_core/messaging) exige iOS 13+.
-      - name: Fijar deployment target iOS 13
+      # Seguridad: garantiza platform 15.0 en el Podfile (Firebase 12.x lo exige).
+      - name: Fijar deployment target iOS 15
         run: |
           cd ios
-          sed -i '' "s/# *platform :ios, '[0-9.]*'/platform :ios, '13.0'/" Podfile || true
+          if grep -qE "^[[:space:]]*#?[[:space:]]*platform :ios" Podfile; then
+            sed -i '' -E "s/^[[:space:]]*#?[[:space:]]*platform :ios.*/platform :ios, '15.0'/" Podfile
+          else
+            printf "platform :ios, '15.0'\n%s\n" "$(cat Podfile)" > Podfile
+          fi
+          echo '--- platform en Podfile ---'; grep -n "platform :ios" Podfile
 
       - name: Dependencias
         run: flutter pub get
