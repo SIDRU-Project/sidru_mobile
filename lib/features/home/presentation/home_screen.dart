@@ -133,6 +133,10 @@ class _HomeContent extends ConsumerWidget {
 
                     // ── Wallet card (placeholder — C4 preparado) ──────────
                     const _WalletPreviewCard(),
+                    const SizedBox(height: 10),
+
+                    // ── Impacto ambiental ──────────────────────────────────
+                    const _ImpactPreviewCard(),
                     const SizedBox(height: 14),
 
                     // ── CTA Escanear QR ────────────────────────────────────
@@ -191,8 +195,11 @@ class _HomeHeader extends StatelessWidget {
       child: Row(
         children: [
           // Avatar circular con doble anillo gradiente
+          // `go` (no `push`): /profile es un tab del ShellRoute; cambiar de rama
+          // del shell se hace con go, igual que el bottom nav y los demás botones
+          // del home. Con push el shell no cambia de tab y se queda en home.
           GestureDetector(
-            onTap: () => context.push(RouteNames.profile),
+            onTap: () => context.go(RouteNames.profile),
             child: Container(
               width: 38,
               height: 38,
@@ -353,6 +360,75 @@ class _WalletPreviewCard extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Impacto ambiental card ────────────────────────────────────────────────────
+// Acceso a la pantalla de impacto global (US-36). Navega a RouteNames.impact.
+
+class _ImpactPreviewCard extends StatelessWidget {
+  const _ImpactPreviewCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(RouteNames.impact),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
+        decoration: BoxDecoration(
+          color: const Color(0xFF131829),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.borderSubtle),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: const Icon(
+                Icons.eco_outlined,
+                color: AppColors.secondary,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Impacto ambiental',
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'CO₂ evitado y plástico reciclado',
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textTertiary,
+              size: 20,
             ),
           ],
         ),

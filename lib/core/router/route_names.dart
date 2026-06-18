@@ -1,5 +1,6 @@
 class RouteNames {
   // ── Auth ─────────────────────────────────────────────────────────────────────
+  static const onboarding = '/onboarding';
   static const login = '/login';
   static const register = '/register';
 
@@ -10,6 +11,7 @@ class RouteNames {
   static const rewards = '/rewards';
   static const profile = '/profile';
   static const wallet = '/wallet';
+  static const impact = '/impact';
 
   // ── Subpantallas de sesiones / QR ────────────────────────────────────────────
   static const scanManual = '/scan/manual';
