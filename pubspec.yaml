@@ -24,9 +24,6 @@ dependencies:
   # Secure storage for JWT
   flutter_secure_storage: ^9.2.2
 
-  # Non-sensitive preferences
-  shared_preferences: ^2.2.3
-
   # QR scanner (Phase 6). 6.x usa MLKit nuevo (GoogleDataTransport 10.x),
   # compatible con Firebase 12.x en iOS.
   mobile_scanner: ^6.0.0

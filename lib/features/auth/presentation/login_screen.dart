@@ -217,12 +217,24 @@ class _SidruBrand extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Logo SIDRU
-        Image.asset(
-          'assets/images/logo_mark.png',
-          width: 48,
-          height: 48,
-          filterQuality: FilterQuality.high,
+        // Ícono circular con gradiente
+        Container(
+          width: 44,
+          height: 44,
+          decoration: const BoxDecoration(
+            gradient: AppColors.primaryGradient,
+            shape: BoxShape.circle,
+          ),
+          child: const Center(
+            child: Text(
+              'S',
+              style: TextStyle(
+                color: Color(0xFF0A0E1A),
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+              ),
+            ),
+          ),
         ),
         const SizedBox(width: 10),
         Column(
