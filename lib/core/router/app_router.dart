@@ -7,6 +7,7 @@ import '../../features/auth/presentation/auth_provider.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/sessions/data/models/recycling_session.dart';
 import '../../features/sessions/presentation/history/history_screen.dart';
 import '../../features/sessions/presentation/history/session_detail_screen.dart';
@@ -27,6 +28,7 @@ import '../../features/rewards/presentation/point_transactions_screen.dart';
 import '../../features/user/presentation/profile_screen.dart';
 import '../../features/user/presentation/edit_profile_screen.dart';
 import '../../features/wallet/presentation/wallet_screen.dart';
+import '../../features/impact/presentation/impact_screen.dart';
 import '../../shared/widgets/sidru_bottom_nav.dart';
 import 'route_names.dart';
 
@@ -36,24 +38,37 @@ final secureStorageProvider = Provider<SecureStorage>((_) => SecureStorage());
 // ── GoRouter ─────────────────────────────────────────────────────────────────
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authNotifier = ref.watch(authNotifierProvider);
+  // OJO: se observa `.notifier`, NO `ref.watch(authNotifierProvider)`. Observar el
+  // ChangeNotifierProvider directamente reconstruiría este provider —y por tanto un
+  // GoRouter nuevo que arranca en `initialLocation: onboarding`— en CADA
+  // notifyListeners() (loading, error, login). `.notifier` devuelve el mismo notifier
+  // sin suscribirse a sus notificaciones: el router se crea una sola vez y reacciona a
+  // los cambios de sesión vía `refreshListenable`, que es el mecanismo correcto.
+  final authNotifier = ref.watch(authNotifierProvider.notifier);
 
   return GoRouter(
     refreshListenable: authNotifier,
-    initialLocation: RouteNames.login,
+    initialLocation: RouteNames.onboarding,
     debugLogDiagnostics: false,
     redirect: (context, state) {
       final authState = authNotifier.state;
       if (authState.isInitializing) return null;
       final isAuth = authState.isAuthenticated;
       final loc = state.matchedLocation;
-      final isOnAuthRoute =
-          loc == RouteNames.login || loc == RouteNames.register;
-      if (!isAuth && !isOnAuthRoute) return RouteNames.login;
-      if (isAuth && isOnAuthRoute) return RouteNames.home;
+      // Rutas públicas accesibles sin sesión.
+      final isPublicRoute =
+          loc == RouteNames.onboarding ||
+          loc == RouteNames.login ||
+          loc == RouteNames.register;
+      if (!isAuth && !isPublicRoute) return RouteNames.onboarding;
+      if (isAuth && isPublicRoute) return RouteNames.home;
       return null;
     },
     routes: [
+      GoRoute(
+        path: RouteNames.onboarding,
+        builder: (_, __) => const OnboardingScreen(),
+      ),
       GoRoute(path: RouteNames.login, builder: (_, __) => const LoginScreen()),
       GoRoute(
         path: RouteNames.register,
@@ -87,6 +102,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.wallet,
         builder: (_, __) => const WalletScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.impact,
+        builder: (_, __) => const ImpactScreen(),
       ),
       GoRoute(
         path: RouteNames.historyDetail,
