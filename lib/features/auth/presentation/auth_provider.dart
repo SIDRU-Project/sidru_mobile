@@ -9,11 +9,21 @@ import '../../../core/router/app_router.dart';
 import '../data/auth_api.dart';
 import '../data/auth_repository.dart';
 
-// ── Providers de la cadena de dependencias ────────────────────────────────────
+// Providers de la cadena de dependencias
 
-final apiClientProvider = Provider<ApiClient>((ref) {
+// Tipo anotado explícitamente: el callback onUnauthorized referencia
+// authNotifierProvider (api → repository → notifier → api), lo que crearía un
+// ciclo de INFERENCIA de tipos. Anotar el tipo lo saca del grafo de inferencia
+// y rompe el ciclo; en runtime no hay ciclo porque el callback es diferido.
+final Provider<ApiClient> apiClientProvider = Provider<ApiClient>((ref) {
   final storage = ref.read(secureStorageProvider);
-  return ApiClient(storage);
+  // El callback es diferido (solo se invoca cuando llega un 401): para entonces
+  // authNotifierProvider ya está construido, así que el ref.read no genera ciclo.
+  return ApiClient(
+    storage,
+    onUnauthorized:
+        () => ref.read(authNotifierProvider.notifier).handleSessionExpired(),
+  );
 });
 
 final authApiProvider = Provider<AuthApi>((ref) {
@@ -36,7 +46,7 @@ final authNotifierProvider = ChangeNotifierProvider<AuthNotifier>((ref) {
   );
 });
 
-// ── Estado de autenticación ────────────────────────────────────────────────────
+// Estado de autenticación
 
 class AuthNotifierState {
   final bool isAuthenticated;
@@ -90,7 +100,7 @@ class AuthNotifierState {
   );
 }
 
-// ── Notifier ──────────────────────────────────────────────────────────────────
+// Notifier
 
 /// Gestiona el ciclo de vida de autenticación.
 /// Extiende ChangeNotifier para que GoRouter lo use como refreshListenable.
@@ -116,7 +126,7 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Restaurar sesión al arrancar ──────────────────────────────────────────
+  // Restaurar sesión al arrancar
 
   Future<void> _restoreSession() async {
     try {
@@ -133,7 +143,7 @@ class AuthNotifier extends ChangeNotifier {
     }
   }
 
-  // ── Sign In ───────────────────────────────────────────────────────────────
+  // Sign In
 
   Future<void> signIn(String email, String password) async {
     _update(_state.withLoading());
@@ -149,7 +159,7 @@ class AuthNotifier extends ChangeNotifier {
     }
   }
 
-  // ── Sign Up ───────────────────────────────────────────────────────────────
+  // Sign Up
 
   /// Retorna true si el registro fue exitoso.
   /// La UI es responsable de navegar a Login tras true.
@@ -180,7 +190,24 @@ class AuthNotifier extends ChangeNotifier {
     }
   }
 
-  // ── Logout ────────────────────────────────────────────────────────────────
+  // Sesión expirada (401 en request autenticado)
+
+  /// Llamado por el [JwtInterceptor] cuando un request autenticado recibe 401
+  /// (el token ya fue borrado por el interceptor). Refleja la expiración en el
+  /// estado para que el router redirija y el usuario vea el motivo al volver a
+  /// login. Ignora los 401 de sign-in/sign-up (aún no autenticado): esos los
+  /// maneja cada flujo con su propio banner, sin pisarlos aquí.
+  void handleSessionExpired() {
+    if (!_state.isAuthenticated) return;
+    unawaited(_fcmHandler.unsubscribeCurrent());
+    _update(
+      const AuthNotifierState(
+        errorMessage: 'Tu sesión expiró. Inicia sesión de nuevo.',
+      ),
+    );
+  }
+
+  // Logout
 
   Future<void> logout() async {
     // FCM: desuscribe del topic del usuario antes de limpiar la sesión (best-effort).
@@ -189,7 +216,7 @@ class AuthNotifier extends ChangeNotifier {
     _update(_state.cleared());
   }
 
-  // ── Utilidades ───────────────────────────────────────────────────────────
+  // Utilidades
 
   void clearError() {
     if (_state.errorMessage != null) {
@@ -204,7 +231,7 @@ class AuthNotifier extends ChangeNotifier {
     }
   }
 
-  // ── Mapeo de errores a mensajes de UI ────────────────────────────────────
+  // Mapeo de errores a mensajes de UI
 
   String _mapSignInError(ApiException e) {
     return switch (e.type) {

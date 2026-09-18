@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/constants/lima_districts.dart';
 import '../../../core/router/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/validators.dart';
+import '../../../shared/widgets/app_dropdown_field.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/gradient_button.dart';
@@ -25,7 +27,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordCtrl = TextEditingController();
   final _confirmPasswordCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
-  final _districtCtrl = TextEditingController();
+
+  /// Distrito seleccionado en el desplegable (null hasta que el usuario elige).
+  String? _selectedDistrict;
 
   @override
   void dispose() {
@@ -34,7 +38,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _passwordCtrl.dispose();
     _confirmPasswordCtrl.dispose();
     _phoneCtrl.dispose();
-    _districtCtrl.dispose();
     super.dispose();
   }
 
@@ -49,7 +52,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           email: _emailCtrl.text.trim(),
           password: _passwordCtrl.text,
           phone: _phoneCtrl.text.trim(),
-          district: _districtCtrl.text.trim(),
+          district: _selectedDistrict ?? '',
         );
 
     if (success && mounted) {
@@ -163,24 +166,30 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             hint: '999999999',
                             controller: _phoneCtrl,
                             keyboardType: TextInputType.phone,
-                            textInputAction: TextInputAction.next,
+                            textInputAction: TextInputAction.done,
                             prefixIcon: const Icon(
                               Icons.phone_outlined,
                               size: 18,
                             ),
                             validator: Validators.phone,
                           ),
-                          AppTextField(
+                          AppDropdownField(
                             label: 'Distrito',
-                            hint: 'San Miguel',
-                            controller: _districtCtrl,
-                            textInputAction: TextInputAction.done,
+                            hint: 'Selecciona tu distrito',
+                            value: _selectedDistrict,
+                            items: limaDistricts,
                             prefixIcon: const Icon(
                               Icons.location_on_outlined,
                               size: 18,
                             ),
-                            validator: Validators.required,
-                            onFieldSubmitted: (_) => _submit(),
+                            onChanged:
+                                (value) =>
+                                    setState(() => _selectedDistrict = value),
+                            validator:
+                                (value) =>
+                                    (value == null || value.isEmpty)
+                                        ? 'Selecciona tu distrito.'
+                                        : null,
                           ),
                           const SizedBox(height: 8),
 
@@ -238,7 +247,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 }
 
-// ── Widgets privados ──────────────────────────────────────────────────────────
+// Widgets privados
 
 /// Campo de confirmación de contraseña que valida contra el campo original.
 /// Se implementa como StatefulWidget para leer el valor actualizado del

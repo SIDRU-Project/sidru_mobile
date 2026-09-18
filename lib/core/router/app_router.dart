@@ -32,10 +32,10 @@ import '../../features/impact/presentation/impact_screen.dart';
 import '../../shared/widgets/sidru_bottom_nav.dart';
 import 'route_names.dart';
 
-// ── Provider compartido de SecureStorage ─────────────────────────────────────
+// Provider compartido de SecureStorage
 final secureStorageProvider = Provider<SecureStorage>((_) => SecureStorage());
 
-// ── GoRouter ─────────────────────────────────────────────────────────────────
+// GoRouter
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   // OJO: se observa `.notifier`, NO `ref.watch(authNotifierProvider)`. Observar el
@@ -75,7 +75,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const RegisterScreen(),
       ),
 
-      // ── Tabs principales (con bottom navigation) ────────────────────────
+      // Tabs principales (con bottom navigation)
       ShellRoute(
         builder: (_, __, child) => _AppShell(child: child),
         routes: [
@@ -98,7 +98,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // ── Sub-páginas fullscreen (sin bottom nav, como el prototipo) ──────
+      // Sub-páginas fullscreen (sin bottom nav, como el prototipo)
       GoRoute(
         path: RouteNames.wallet,
         builder: (_, __) => const WalletScreen(),
@@ -138,7 +138,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ),
       ),
 
-      // ── Flujo QR (fullscreen, fuera del shell) ──────────────────────────
+      // Flujo QR (fullscreen, fuera del shell)
       GoRoute(
         path: RouteNames.scan,
         builder: (_, __) => const QrScannerScreen(),
@@ -185,7 +185,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-// ── Shell con SidruBottomNav flotante ─────────────────────────────────────────
+// Shell con SidruBottomNav flotante
 
 class _AppShell extends ConsumerWidget {
   final Widget child;

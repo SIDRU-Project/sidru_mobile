@@ -42,7 +42,7 @@ class SessionCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // ── Ícono verde ───────────────────────────────────────────────
+            // Ícono verde
             Container(
               width: 38,
               height: 38,
@@ -61,7 +61,7 @@ class SessionCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
 
-            // ── Datos principales ─────────────────────────────────────────
+            // Datos principales
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +121,7 @@ class SessionCard extends StatelessWidget {
               ),
             ),
 
-            // ── Puntos ────────────────────────────────────────────────────
+            // Puntos
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [

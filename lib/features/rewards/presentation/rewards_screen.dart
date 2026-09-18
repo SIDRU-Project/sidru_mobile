@@ -26,7 +26,7 @@ class RewardsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ──────────────────────────────────────────────────────
+            // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: Row(
@@ -65,14 +65,14 @@ class RewardsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 14),
 
-            // ── Banner de puntos disponibles ───────────────────────────────
+            // Banner de puntos disponibles
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: _PointsBanner(points: points),
             ),
             const SizedBox(height: 16),
 
-            // ── Catálogo ───────────────────────────────────────────────────
+            // Catálogo
             Expanded(
               child: rewardsAsync.when(
                 loading: () => const LoadingState(),

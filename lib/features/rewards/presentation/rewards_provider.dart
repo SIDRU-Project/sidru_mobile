@@ -8,7 +8,7 @@ import '../data/models/reward.dart';
 import '../data/reward_api.dart';
 import '../data/reward_repository.dart';
 
-// ── Cadena de dependencias ────────────────────────────────────────────────────
+// Cadena de dependencias
 
 final rewardApiProvider = Provider<RewardApi>((ref) {
   return RewardApi(ref.watch(apiClientProvider));
@@ -18,7 +18,7 @@ final rewardRepositoryProvider = Provider<RewardRepository>((ref) {
   return RewardRepository(ref.watch(rewardApiProvider));
 });
 
-// ── Catálogo de recompensas ───────────────────────────────────────────────────
+// Catálogo de recompensas
 
 final rewardsListProvider =
     AsyncNotifierProvider<RewardsNotifier, List<Reward>>(
@@ -47,7 +47,7 @@ class RewardsNotifier extends AsyncNotifier<List<Reward>> {
   }
 }
 
-// ── Detalle de recompensa ─────────────────────────────────────────────────────
+// Detalle de recompensa
 
 final rewardDetailProvider = FutureProvider.family<Reward, int>((
   ref,
@@ -56,7 +56,7 @@ final rewardDetailProvider = FutureProvider.family<Reward, int>((
   return ref.read(rewardRepositoryProvider).getReward(id);
 });
 
-// ── Historial de transacciones ────────────────────────────────────────────────
+// Historial de transacciones
 
 final transactionsProvider =
     AsyncNotifierProvider<TransactionsNotifier, List<PointTransaction>>(
@@ -88,7 +88,7 @@ class TransactionsNotifier extends AsyncNotifier<List<PointTransaction>> {
   }
 }
 
-// ── Canje de recompensa ───────────────────────────────────────────────────────
+// Canje de recompensa
 
 enum RedeemErrorKind { conflict, network, server }
 

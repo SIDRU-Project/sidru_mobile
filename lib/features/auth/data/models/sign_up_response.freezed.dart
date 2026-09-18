@@ -23,7 +23,7 @@ SignUpResponse _$SignUpResponseFromJson(Map<String, dynamic> json) {
 mixin _$SignUpResponse {
   int get id => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
-  String get token => throw _privateConstructorUsedError;
+  List<String> get roles => throw _privateConstructorUsedError;
 
   /// Serializes this SignUpResponse to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -42,7 +42,7 @@ abstract class $SignUpResponseCopyWith<$Res> {
     $Res Function(SignUpResponse) then,
   ) = _$SignUpResponseCopyWithImpl<$Res, SignUpResponse>;
   @useResult
-  $Res call({int id, String email, String token});
+  $Res call({int id, String email, List<String> roles});
 }
 
 /// @nodoc
@@ -59,7 +59,7 @@ class _$SignUpResponseCopyWithImpl<$Res, $Val extends SignUpResponse>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? id = null, Object? email = null, Object? token = null}) {
+  $Res call({Object? id = null, Object? email = null, Object? roles = null}) {
     return _then(
       _value.copyWith(
             id:
@@ -72,11 +72,11 @@ class _$SignUpResponseCopyWithImpl<$Res, $Val extends SignUpResponse>
                     ? _value.email
                     : email // ignore: cast_nullable_to_non_nullable
                         as String,
-            token:
-                null == token
-                    ? _value.token
-                    : token // ignore: cast_nullable_to_non_nullable
-                        as String,
+            roles:
+                null == roles
+                    ? _value.roles
+                    : roles // ignore: cast_nullable_to_non_nullable
+                        as List<String>,
           )
           as $Val,
     );
@@ -92,7 +92,7 @@ abstract class _$$SignUpResponseImplCopyWith<$Res>
   ) = __$$SignUpResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int id, String email, String token});
+  $Res call({int id, String email, List<String> roles});
 }
 
 /// @nodoc
@@ -108,7 +108,7 @@ class __$$SignUpResponseImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? id = null, Object? email = null, Object? token = null}) {
+  $Res call({Object? id = null, Object? email = null, Object? roles = null}) {
     return _then(
       _$SignUpResponseImpl(
         id:
@@ -121,11 +121,11 @@ class __$$SignUpResponseImplCopyWithImpl<$Res>
                 ? _value.email
                 : email // ignore: cast_nullable_to_non_nullable
                     as String,
-        token:
-            null == token
-                ? _value.token
-                : token // ignore: cast_nullable_to_non_nullable
-                    as String,
+        roles:
+            null == roles
+                ? _value._roles
+                : roles // ignore: cast_nullable_to_non_nullable
+                    as List<String>,
       ),
     );
   }
@@ -137,8 +137,8 @@ class _$SignUpResponseImpl implements _SignUpResponse {
   const _$SignUpResponseImpl({
     required this.id,
     required this.email,
-    required this.token,
-  });
+    final List<String> roles = const <String>[],
+  }) : _roles = roles;
 
   factory _$SignUpResponseImpl.fromJson(Map<String, dynamic> json) =>
       _$$SignUpResponseImplFromJson(json);
@@ -147,12 +147,18 @@ class _$SignUpResponseImpl implements _SignUpResponse {
   final int id;
   @override
   final String email;
+  final List<String> _roles;
   @override
-  final String token;
+  @JsonKey()
+  List<String> get roles {
+    if (_roles is EqualUnmodifiableListView) return _roles;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_roles);
+  }
 
   @override
   String toString() {
-    return 'SignUpResponse(id: $id, email: $email, token: $token)';
+    return 'SignUpResponse(id: $id, email: $email, roles: $roles)';
   }
 
   @override
@@ -162,12 +168,17 @@ class _$SignUpResponseImpl implements _SignUpResponse {
             other is _$SignUpResponseImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.email, email) || other.email == email) &&
-            (identical(other.token, token) || other.token == token));
+            const DeepCollectionEquality().equals(other._roles, _roles));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, email, token);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    email,
+    const DeepCollectionEquality().hash(_roles),
+  );
 
   /// Create a copy of SignUpResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -190,7 +201,7 @@ abstract class _SignUpResponse implements SignUpResponse {
   const factory _SignUpResponse({
     required final int id,
     required final String email,
-    required final String token,
+    final List<String> roles,
   }) = _$SignUpResponseImpl;
 
   factory _SignUpResponse.fromJson(Map<String, dynamic> json) =
@@ -201,7 +212,7 @@ abstract class _SignUpResponse implements SignUpResponse {
   @override
   String get email;
   @override
-  String get token;
+  List<String> get roles;
 
   /// Create a copy of SignUpResponse
   /// with the given fields replaced by the non-null parameter values.

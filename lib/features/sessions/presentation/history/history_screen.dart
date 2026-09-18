@@ -65,7 +65,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                // ── Header ──────────────────────────────────────────────
+                // Header
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
@@ -101,7 +101,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   ),
                 ),
 
-                // ── Filtros horizontales ─────────────────────────────────
+                // Filtros horizontales
                 SliverToBoxAdapter(
                   child: SizedBox(
                     height: 38,
@@ -162,7 +162,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 14)),
 
-                // ── Lista ────────────────────────────────────────────────
+                // Lista
                 SliverPadding(
                   padding: EdgeInsets.fromLTRB(20, 0, 20, bottomPad),
                   sliver:

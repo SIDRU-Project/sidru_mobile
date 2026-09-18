@@ -48,7 +48,7 @@ class SessionSummaryScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // ── Hero: puntos estimados ─────────────────────────────
+                    // Hero: puntos estimados
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -131,7 +131,7 @@ class SessionSummaryScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 14),
 
-                    // ── Detalle ────────────────────────────────────────────
+                    // Detalle
                     _InfoCard(
                       rows: [
                         _Row('ID de sesión', '#${session.id}'),
@@ -144,7 +144,7 @@ class SessionSummaryScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 18),
 
-                    // ── Acción según estado ────────────────────────────────
+                    // Acción según estado
                     if (isPending)
                       GradientButton(
                         label: 'Confirmar entrega',
@@ -182,7 +182,7 @@ class SessionSummaryScreen extends ConsumerWidget {
   }
 }
 
-// ── Widgets privados ──────────────────────────────────────────────────────────
+// Widgets privados
 
 class _Row {
   final String key;

@@ -33,7 +33,7 @@ class SessionDetailScreen extends ConsumerWidget {
   }
 }
 
-// ── Contenido ─────────────────────────────────────────────────────────────────
+// Contenido
 
 class _DetailContent extends ConsumerWidget {
   final RecyclingSession session;
@@ -59,7 +59,7 @@ class _DetailContent extends ConsumerWidget {
       child: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // ── Header ────────────────────────────────────────────────────
+          // Header
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
@@ -105,7 +105,7 @@ class _DetailContent extends ConsumerWidget {
             padding: EdgeInsets.fromLTRB(20, 0, 20, bottomPad),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // ── Cards de stats principales ─────────────────────────
+                // Cards de stats principales
                 Row(
                   children: [
                     Expanded(
@@ -128,7 +128,7 @@ class _DetailContent extends ConsumerWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // ── Sección: datos de la sesión ────────────────────────
+                // Sección: datos de la sesión
                 _SectionLabel('Datos de la sesión'),
                 const SizedBox(height: 8),
                 _InfoCard(
@@ -144,7 +144,7 @@ class _DetailContent extends ConsumerWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // ── Sección: Smart Bin (si carga OK) ──────────────────
+                // Sección: Smart Bin (si carga OK)
                 binAsync.when(
                   loading: () => const SizedBox.shrink(),
                   error: (_, __) => const SizedBox.shrink(),
@@ -167,7 +167,7 @@ class _DetailContent extends ConsumerWidget {
                       ),
                 ),
 
-                // ── Sección: Blockchain ────────────────────────────────
+                // Sección: Blockchain
                 _SectionLabel('Blockchain'),
                 const SizedBox(height: 8),
                 _BlockchainCard(txHash: session.blockchainTxHash),
@@ -180,7 +180,7 @@ class _DetailContent extends ConsumerWidget {
   }
 }
 
-// ── Widgets privados ──────────────────────────────────────────────────────────
+// Widgets privados
 
 class _StatCard extends StatelessWidget {
   final String label;

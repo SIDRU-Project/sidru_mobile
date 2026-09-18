@@ -64,7 +64,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
       backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
-          // ── Cámara ───────────────────────────────────────────────────────
+          // Cámara
           MobileScanner(
             controller: _controller,
             onDetect: _onDetect,
@@ -72,10 +72,10 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
                 (context, error, child) => _CameraError(onManual: _goManual),
           ),
 
-          // ── Oscurecido + recuadro ────────────────────────────────────────
+          // Oscurecido + recuadro
           const _ScannerOverlay(),
 
-          // ── UI superior / inferior ───────────────────────────────────────
+          // UI superior / inferior
           SafeArea(
             child: Column(
               children: [
@@ -197,7 +197,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
   }
 }
 
-// ── Overlay con recuadro y esquinas gradiente ─────────────────────────────────
+// Overlay con recuadro y esquinas gradiente
 
 class _ScannerOverlay extends StatelessWidget {
   const _ScannerOverlay();
@@ -327,7 +327,7 @@ class _CircleButton extends StatelessWidget {
   }
 }
 
-// ── Estado de permiso denegado / error de cámara ──────────────────────────────
+// Estado de permiso denegado / error de cámara
 
 class _CameraError extends StatelessWidget {
   final VoidCallback onManual;

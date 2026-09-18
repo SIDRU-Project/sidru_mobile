@@ -44,7 +44,7 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-// ── Helper: RecyclingSession → LastSessionData ────────────────────────────────
+// Helper: RecyclingSession → LastSessionData
 
 LastSessionData? _toLastSessionData(RecyclingSession? s) {
   if (s == null) return null;
@@ -60,7 +60,7 @@ LastSessionData? _toLastSessionData(RecyclingSession? s) {
   );
 }
 
-// ── Contenido principal ───────────────────────────────────────────────────────
+// Contenido principal
 
 class _HomeContent extends ConsumerWidget {
   final UserProfile profile;
@@ -78,7 +78,7 @@ class _HomeContent extends ConsumerWidget {
 
     return Stack(
       children: [
-        // ── Auras de fondo (como el prototipo) ───────────────────────────────
+        // Auras de fondo (como el prototipo)
         Positioned(
           right: -80,
           top: -80,
@@ -96,7 +96,7 @@ class _HomeContent extends ConsumerWidget {
           ),
         ),
 
-        // ── Scroll principal ─────────────────────────────────────────────────
+        // Scroll principal
         SafeArea(
           bottom: false,
           child: CustomScrollView(
@@ -107,7 +107,7 @@ class _HomeContent extends ConsumerWidget {
                 padding: EdgeInsets.fromLTRB(20, 0, 20, bottomPad),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    // ── Stats: puntos + chapas ─────────────────────────────
+                    // Stats: puntos + chapas
                     Row(
                       children: [
                         Expanded(
@@ -131,19 +131,19 @@ class _HomeContent extends ConsumerWidget {
                     ),
                     const SizedBox(height: 12),
 
-                    // ── Wallet card (placeholder — C4 preparado) ──────────
+                    // Wallet card (placeholder — C4 preparado)
                     const _WalletPreviewCard(),
                     const SizedBox(height: 10),
 
-                    // ── Impacto ambiental ──────────────────────────────────
+                    // Impacto ambiental
                     const _ImpactPreviewCard(),
                     const SizedBox(height: 14),
 
-                    // ── CTA Escanear QR ────────────────────────────────────
+                    // CTA Escanear QR
                     _GradientQrButton(onTap: () => context.go(RouteNames.scan)),
                     const SizedBox(height: 18),
 
-                    // ── Última sesión ──────────────────────────────────────
+                    // Última sesión
                     _SectionHeader(
                       label: 'Última sesión',
                       actionLabel: 'Ver historial',
@@ -162,7 +162,7 @@ class _HomeContent extends ConsumerWidget {
                     ),
                     const SizedBox(height: 14),
 
-                    // ── Accesos rápidos ────────────────────────────────────
+                    // Accesos rápidos
                     _SectionHeader(label: 'Accesos rápidos'),
                     const SizedBox(height: 8),
                     _QuickGrid(totalSessions: profile.totalSessions),
@@ -177,7 +177,7 @@ class _HomeContent extends ConsumerWidget {
   }
 }
 
-// ── Header ────────────────────────────────────────────────────────────────────
+// Header
 
 class _HomeHeader extends StatelessWidget {
   final UserProfile profile;
@@ -279,7 +279,7 @@ class _HomeHeader extends StatelessWidget {
   }
 }
 
-// ── Wallet card ───────────────────────────────────────────────────────────────
+// Wallet card
 // Acceso rápido a la WalletScreen (ya implementada): ícono + texto + chip "Activa".
 // Navega a RouteNames.wallet al tocar.
 
@@ -368,7 +368,7 @@ class _WalletPreviewCard extends StatelessWidget {
   }
 }
 
-// ── Impacto ambiental card ────────────────────────────────────────────────────
+// Impacto ambiental card
 // Acceso a la pantalla de impacto global (US-36). Navega a RouteNames.impact.
 
 class _ImpactPreviewCard extends StatelessWidget {
@@ -437,7 +437,7 @@ class _ImpactPreviewCard extends StatelessWidget {
   }
 }
 
-// ── Botón Escanear QR ─────────────────────────────────────────────────────────
+// Botón Escanear QR
 // Alto 60, gradiente, sin borde, glow verde sutil
 
 class _GradientQrButton extends StatelessWidget {
@@ -485,7 +485,7 @@ class _GradientQrButton extends StatelessWidget {
   }
 }
 
-// ── Header de sección ─────────────────────────────────────────────────────────
+// Header de sección
 
 class _SectionHeader extends StatelessWidget {
   final String label;
@@ -526,7 +526,7 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// ── Grid de acciones rápidas (2 cards como el prototipo) ──────────────────────
+// Grid de acciones rápidas (2 cards como el prototipo)
 
 class _QuickGrid extends StatelessWidget {
   final int totalSessions;
@@ -560,7 +560,7 @@ class _QuickGrid extends StatelessWidget {
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// Helpers
 
 class _GlowOrb extends StatelessWidget {
   final double size;

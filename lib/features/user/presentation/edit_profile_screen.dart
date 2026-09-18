@@ -166,7 +166,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 }
 
-// ── Widgets privados ──────────────────────────────────────────────────────────
+// Widgets privados
 
 class _EditableAvatar extends StatelessWidget {
   final String initial;

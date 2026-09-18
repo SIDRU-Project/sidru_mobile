@@ -9,7 +9,7 @@ import '../data/session_api.dart';
 import '../data/session_repository.dart';
 import '../utils/qr_token_parser.dart';
 
-// ── Cadena de dependencias ────────────────────────────────────────────────────
+// Cadena de dependencias
 
 final sessionApiProvider = Provider<SessionApi>((ref) {
   return SessionApi(ref.watch(apiClientProvider));
@@ -19,7 +19,7 @@ final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
   return SessionRepository(ref.watch(sessionApiProvider));
 });
 
-// ── Lista de sesiones ─────────────────────────────────────────────────────────
+// Lista de sesiones
 
 /// Lista completa de sesiones del usuario.
 /// `build()` carga al observarse por primera vez.
@@ -57,7 +57,7 @@ class SessionListNotifier extends AsyncNotifier<List<RecyclingSession>> {
   }
 }
 
-// ── Detalle de sesión (por ID) ────────────────────────────────────────────────
+// Detalle de sesión (por ID)
 
 /// Carga el detalle de una sesión específica.
 /// Se invalida automáticamente cuando el proveedor padre cambia.
@@ -76,7 +76,7 @@ final sessionDetailProvider = FutureProvider.family<RecyclingSession, int>((
   }
 });
 
-// ── Smart Bin (opcional, en detalle de sesión) ────────────────────────────────
+// Smart Bin (opcional, en detalle de sesión)
 
 final smartBinProvider = FutureProvider.family<SmartBin, int>((
   ref,
@@ -85,7 +85,7 @@ final smartBinProvider = FutureProvider.family<SmartBin, int>((
   return ref.read(sessionRepositoryProvider).getSmartBin(binId);
 });
 
-// ── Flujo de escaneo QR ───────────────────────────────────────────────────────
+// Flujo de escaneo QR
 
 /// Tipos de error del flujo de escaneo / confirmación.
 /// Cada valor mapea a una variante visual de ScanErrorScreen.

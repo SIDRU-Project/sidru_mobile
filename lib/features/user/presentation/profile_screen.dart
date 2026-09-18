@@ -40,7 +40,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-// ── Contenido ─────────────────────────────────────────────────────────────────
+// Contenido
 
 class _ProfileContent extends ConsumerWidget {
   final UserProfile profile;
@@ -84,7 +84,7 @@ class _ProfileContent extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ── Header ─────────────────────────────────────────────────
+                // Header
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   child: Row(
@@ -104,7 +104,7 @@ class _ProfileContent extends ConsumerWidget {
                   ),
                 ),
 
-                // ── Avatar + nombre ─────────────────────────────────────────
+                // Avatar + nombre
                 Column(
                   children: [
                     const SizedBox(height: AppSpacing.sm),
@@ -146,15 +146,15 @@ class _ProfileContent extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.xl),
 
-                // ── Stats ───────────────────────────────────────────────────
+                // Stats
                 _StatsRow(profile: profile),
                 const SizedBox(height: AppSpacing.lg),
 
-                // ── Info card ───────────────────────────────────────────────
+                // Info card
                 _InfoCard(profile: profile),
                 const SizedBox(height: AppSpacing.xl),
 
-                // ── Acciones ────────────────────────────────────────────────
+                // Acciones
                 GradientButton(
                   label: 'Editar perfil',
                   leading: const Icon(
@@ -189,7 +189,7 @@ class _ProfileContent extends ConsumerWidget {
                   },
                 ),
 
-                // ── Footer versión ──────────────────────────────────────────
+                // Footer versión
                 const SizedBox(height: AppSpacing.xl),
                 Center(
                   child: Text('SIDRU · v1.0.0', style: AppTextStyles.labelMono),
@@ -203,7 +203,7 @@ class _ProfileContent extends ConsumerWidget {
   }
 }
 
-// ── Stats row ─────────────────────────────────────────────────────────────────
+// Stats row
 
 class _StatsRow extends StatelessWidget {
   final UserProfile profile;
@@ -268,7 +268,7 @@ class _Divider extends StatelessWidget {
   }
 }
 
-// ── Info card ─────────────────────────────────────────────────────────────────
+// Info card
 
 class _InfoCard extends StatelessWidget {
   final UserProfile profile;

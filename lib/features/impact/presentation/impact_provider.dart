@@ -4,7 +4,7 @@ import '../data/impact_repository.dart';
 import '../data/metrics_api.dart';
 import '../data/models/impact_metrics.dart';
 
-// ── Cadena de dependencias ────────────────────────────────────────────────────
+// Cadena de dependencias
 
 final metricsApiProvider = Provider<MetricsApi>((ref) {
   return MetricsApi(ref.watch(apiClientProvider));
