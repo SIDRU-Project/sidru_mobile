@@ -104,14 +104,17 @@ class WalletScreen extends ConsumerWidget {
                           onRetry:
                               () => ref.read(walletProvider.notifier).refresh(),
                         ),
-                    data: (wallet) {
-                      if (wallet == null) {
+                    data: (snapshot) {
+                      if (snapshot == null) {
                         return ErrorState(
                           message: 'No se pudo cargar tu wallet.',
                           onRetry:
                               () => ref.read(walletProvider.notifier).refresh(),
                         );
                       }
+                      // Sin conexión se muestra el último saldo conocido, señalado
+                      // como tal para no hacerlo pasar por el saldo vigente (CP019).
+                      final wallet = snapshot.balance;
                       return RefreshIndicator(
                         color: AppColors.primary,
                         backgroundColor: AppColors.surface,
@@ -125,6 +128,7 @@ class WalletScreen extends ConsumerWidget {
                           ),
                           padding: EdgeInsets.fromLTRB(20, 4, 20, bottomPad),
                           children: [
+                            if (snapshot.fromCache) const _OfflineBanner(),
                             _BalanceCard(
                               wallet: wallet,
                               onCopyAddress:
@@ -174,7 +178,41 @@ class WalletScreen extends ConsumerWidget {
   }
 }
 
-// ── Card hero de balance ──────────────────────────────────────────────────────
+// Card hero de balance
+
+/// Indicador de modo offline: el saldo mostrado es el último conocido, no el saldo
+/// on-chain vigente (CP019, paso 4).
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('wallet-offline-banner'),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.cloud_off_rounded, size: 18, color: Colors.white70),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Sin conexión. Mostrando tu último saldo conocido.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.white70,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _BalanceCard extends StatelessWidget {
   final WalletBalance wallet;
@@ -335,7 +373,7 @@ class _IconAction extends StatelessWidget {
   }
 }
 
-// ── Wallet vinculada ──────────────────────────────────────────────────────────
+// Wallet vinculada
 
 class _LinkedWalletRow extends StatelessWidget {
   final String address;
@@ -390,7 +428,7 @@ class _LinkedWalletRow extends StatelessWidget {
   }
 }
 
-// ── Botón de retiro ───────────────────────────────────────────────────────────
+// Botón de retiro
 
 class _WithdrawButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -440,7 +478,7 @@ class _WithdrawButton extends StatelessWidget {
   }
 }
 
-// ── Lista de transacciones ────────────────────────────────────────────────────
+// Lista de transacciones
 
 class _TransactionList extends ConsumerWidget {
   final void Function(String url) onOpen;
@@ -610,7 +648,7 @@ class _StatusChip extends StatelessWidget {
   }
 }
 
-// ── Misc ──────────────────────────────────────────────────────────────────────
+// Misc
 
 class _SectionLabel extends StatelessWidget {
   final String text;

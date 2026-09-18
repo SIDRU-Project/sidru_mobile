@@ -21,6 +21,7 @@ WalletTransaction _$WalletTransactionFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$WalletTransaction {
+  // ignore: invalid_annotation_target
   @JsonKey(unknownEnumValue: WalletTransactionType.unknown)
   WalletTransactionType get type => throw _privateConstructorUsedError;
   String get txHash => throw _privateConstructorUsedError;
@@ -179,6 +180,7 @@ class _$WalletTransactionImpl implements _WalletTransaction {
   factory _$WalletTransactionImpl.fromJson(Map<String, dynamic> json) =>
       _$$WalletTransactionImplFromJson(json);
 
+  // ignore: invalid_annotation_target
   @override
   @JsonKey(unknownEnumValue: WalletTransactionType.unknown)
   final WalletTransactionType type;
@@ -240,6 +242,7 @@ abstract class _WalletTransaction implements WalletTransaction {
   factory _WalletTransaction.fromJson(Map<String, dynamic> json) =
       _$WalletTransactionImpl.fromJson;
 
+  // ignore: invalid_annotation_target
   @override
   @JsonKey(unknownEnumValue: WalletTransactionType.unknown)
   WalletTransactionType get type;

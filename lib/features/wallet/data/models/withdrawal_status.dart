@@ -12,14 +12,7 @@ part 'withdrawal_status.g.dart';
 /// El retiro es idempotente: estados EN_PROCESO / COMPLETADO / FALLIDO.
 /// Por regla de negocio mueve el SALDO COMPLETO (RN-BC-05); la app solo envía
 /// `toAddress`. `amountWei` llega como STRING para conservar los 18 decimales.
-///
-/// Campos:
-///   - id          → identificador del retiro
-///   - toAddress   → dirección destino (MetaMask) del ciudadano
-///   - amountWei   → monto retirado en wei
-///   - status      → EN_PROCESO | COMPLETADO | FALLIDO
-///   - txHash      → hash on-chain (null mientras no exista)
-///   - explorerUrl → enlace al explorador (null mientras no exista hash)
+/// `txHash` y `explorerUrl` son null mientras la transacción no se haya emitido.
 @freezed
 class WithdrawalStatus with _$WithdrawalStatus {
   const factory WithdrawalStatus({

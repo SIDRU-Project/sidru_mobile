@@ -1,39 +1,46 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_exception.dart';
 import '../../auth/presentation/auth_provider.dart';
-import '../data/models/wallet_balance.dart';
+import '../data/models/wallet_snapshot.dart';
 import '../data/models/wallet_transaction.dart';
 import '../data/models/withdrawal_status.dart';
 import '../data/wallet_api.dart';
+import '../data/wallet_cache.dart';
 import '../data/wallet_repository.dart';
 
-// ── Cadena de dependencias (C4) ───────────────────────────────────────────────
+// Cadena de dependencias (C4)
 
 final walletApiProvider = Provider<WalletApi>((ref) {
   return WalletApi(ref.watch(apiClientProvider));
 });
 
-final walletRepositoryProvider = Provider<WalletRepository>((ref) {
-  return WalletRepository(ref.watch(walletApiProvider));
+/// Caché del último saldo conocido, para el modo offline de la WalletScreen (CP019).
+final walletCacheProvider = Provider<WalletCache>((ref) {
+  return WalletCache(SecureWalletCacheStore());
 });
 
-// ── Balance / wallet del usuario ──────────────────────────────────────────────
+final walletRepositoryProvider = Provider<WalletRepository>((ref) {
+  return WalletRepository(ref.watch(walletApiProvider), ref.watch(walletCacheProvider));
+});
+
+// Balance / wallet del usuario
 
 /// Estado de la wallet del usuario (GET /wallet/me).
 /// `autoDispose`: se desecha al salir de la WalletScreen y re-consulta el saldo
 /// on-chain cada vez que se vuelve a abrir (balance/transacciones siempre frescos).
+/// El valor incluye si el saldo vino de la red o del caché offline (CP019).
 final walletProvider =
-    AsyncNotifierProvider.autoDispose<WalletNotifier, WalletBalance?>(
+    AsyncNotifierProvider.autoDispose<WalletNotifier, WalletSnapshot?>(
       () => WalletNotifier(),
     );
 
-class WalletNotifier extends AutoDisposeAsyncNotifier<WalletBalance?> {
+class WalletNotifier extends AutoDisposeAsyncNotifier<WalletSnapshot?> {
   @override
-  Future<WalletBalance?> build() async {
+  Future<WalletSnapshot?> build() async {
     return _load();
   }
 
-  Future<WalletBalance?> _load() async {
+  Future<WalletSnapshot?> _load() async {
     try {
       return await ref.read(walletRepositoryProvider).getWallet();
     } on ApiException catch (e) {
@@ -51,7 +58,7 @@ class WalletNotifier extends AutoDisposeAsyncNotifier<WalletBalance?> {
   }
 }
 
-// ── Transacciones recientes ───────────────────────────────────────────────────
+// Transacciones recientes
 
 /// Transacciones on-chain del usuario (GET /wallet/me/transactions).
 /// `autoDispose`: se recargan cada vez que se abre la WalletScreen.
@@ -68,7 +75,7 @@ final walletTransactionsProvider =
   }
 });
 
-// ── Acción de retiro ──────────────────────────────────────────────────────────
+// Acción de retiro
 
 /// Resultado del flujo de retiro hacia el sheet (sin exponer detalles HTTP).
 sealed class WithdrawOutcome {

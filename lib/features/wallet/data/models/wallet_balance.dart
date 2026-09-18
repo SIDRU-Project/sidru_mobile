@@ -11,14 +11,7 @@ part 'wallet_balance.g.dart';
 /// precisión con los 18 decimales de CTC. No se convierten a num: el balance
 /// (`balanceOf` on-chain) es la fuente de verdad del saldo y `solesRef` es una
 /// equivalencia REFERENCIAL (1 CTC ≈ S/ 0.01), nunca un tipo de cambio real.
-///
-/// Campos:
-///   - address       → dirección custodial EVM del ciudadano (0x..)
-///   - network       → red activa, ej: "polygon-amoy"
-///   - balanceCtc    → saldo CTC ya formateado (entero/decimal legible), ej: "280"
-///   - balanceWei    → saldo en wei (18 decimales), ej: "280000000000000000000"
-///   - solesRef      → equivalencia referencial en soles, ej: "2.80"
-///   - linkedWallet  → wallet de retiro vinculada (MetaMask), null si no hay
+/// `linkedWallet` es null si el ciudadano no ha vinculado una wallet de retiro.
 @freezed
 class WalletBalance with _$WalletBalance {
   const factory WalletBalance({

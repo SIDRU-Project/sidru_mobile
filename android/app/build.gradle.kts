@@ -24,7 +24,9 @@ if (hasReleaseKeystore) {
 
 android {
     namespace = "com.sidru.sidru_mobile"
-    compileSdk = flutter.compileSdkVersion
+    // Fijo en 36: mobile_scanner exige compilar contra SDK 36. Las versiones de
+    // compilación son retrocompatibles, así que subirla no afecta a minSdk/targetSdk.
+    compileSdk = 36
     // Fijo al NDK que requieren los plugins (firebase, secure_storage, scanner...).
     // Son retrocompatibles; usar el más alto evita el warning de NDK mixto.
     ndkVersion = "27.0.12077973"
