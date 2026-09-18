@@ -137,7 +137,7 @@ class _ProfileContent extends ConsumerWidget {
                     Text(profile.fullName, style: AppTextStyles.headlineMedium),
                     const SizedBox(height: 4),
                     Text(
-                      profile.district,
+                      profile.district ?? 'Sin distrito',
                       style: AppTextStyles.bodySmall.copyWith(
                         fontFamily: 'monospace',
                       ),
@@ -285,8 +285,16 @@ class _InfoCard extends StatelessWidget {
       child: Column(
         children: [
           _InfoRow(label: 'Nombre', value: profile.fullName),
-          _InfoRow(label: 'Teléfono', value: profile.phone, mono: true),
-          _InfoRow(label: 'Distrito', value: profile.district, isLast: true),
+          _InfoRow(
+            label: 'Teléfono',
+            value: profile.phone ?? 'Sin teléfono',
+            mono: true,
+          ),
+          _InfoRow(
+            label: 'Distrito',
+            value: profile.district ?? 'Sin distrito',
+            isLast: true,
+          ),
         ],
       ),
     );

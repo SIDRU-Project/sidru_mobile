@@ -24,8 +24,8 @@ mixin _$UserProfile {
   int get id => throw _privateConstructorUsedError;
   int get userId => throw _privateConstructorUsedError;
   String get fullName => throw _privateConstructorUsedError;
-  String get phone => throw _privateConstructorUsedError;
-  String get district => throw _privateConstructorUsedError;
+  String? get phone => throw _privateConstructorUsedError;
+  String? get district => throw _privateConstructorUsedError;
   int get totalPoints => throw _privateConstructorUsedError;
   int get totalCaps => throw _privateConstructorUsedError;
   int get totalSessions => throw _privateConstructorUsedError;
@@ -51,8 +51,8 @@ abstract class $UserProfileCopyWith<$Res> {
     int id,
     int userId,
     String fullName,
-    String phone,
-    String district,
+    String? phone,
+    String? district,
     int totalPoints,
     int totalCaps,
     int totalSessions,
@@ -77,8 +77,8 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
     Object? id = null,
     Object? userId = null,
     Object? fullName = null,
-    Object? phone = null,
-    Object? district = null,
+    Object? phone = freezed,
+    Object? district = freezed,
     Object? totalPoints = null,
     Object? totalCaps = null,
     Object? totalSessions = null,
@@ -101,15 +101,15 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
                     : fullName // ignore: cast_nullable_to_non_nullable
                         as String,
             phone:
-                null == phone
+                freezed == phone
                     ? _value.phone
                     : phone // ignore: cast_nullable_to_non_nullable
-                        as String,
+                        as String?,
             district:
-                null == district
+                freezed == district
                     ? _value.district
                     : district // ignore: cast_nullable_to_non_nullable
-                        as String,
+                        as String?,
             totalPoints:
                 null == totalPoints
                     ? _value.totalPoints
@@ -144,8 +144,8 @@ abstract class _$$UserProfileImplCopyWith<$Res>
     int id,
     int userId,
     String fullName,
-    String phone,
-    String district,
+    String? phone,
+    String? district,
     int totalPoints,
     int totalCaps,
     int totalSessions,
@@ -169,8 +169,8 @@ class __$$UserProfileImplCopyWithImpl<$Res>
     Object? id = null,
     Object? userId = null,
     Object? fullName = null,
-    Object? phone = null,
-    Object? district = null,
+    Object? phone = freezed,
+    Object? district = freezed,
     Object? totalPoints = null,
     Object? totalCaps = null,
     Object? totalSessions = null,
@@ -193,15 +193,15 @@ class __$$UserProfileImplCopyWithImpl<$Res>
                 : fullName // ignore: cast_nullable_to_non_nullable
                     as String,
         phone:
-            null == phone
+            freezed == phone
                 ? _value.phone
                 : phone // ignore: cast_nullable_to_non_nullable
-                    as String,
+                    as String?,
         district:
-            null == district
+            freezed == district
                 ? _value.district
                 : district // ignore: cast_nullable_to_non_nullable
-                    as String,
+                    as String?,
         totalPoints:
             null == totalPoints
                 ? _value.totalPoints
@@ -229,8 +229,8 @@ class _$UserProfileImpl implements _UserProfile {
     required this.id,
     required this.userId,
     required this.fullName,
-    required this.phone,
-    required this.district,
+    this.phone,
+    this.district,
     required this.totalPoints,
     required this.totalCaps,
     required this.totalSessions,
@@ -246,9 +246,9 @@ class _$UserProfileImpl implements _UserProfile {
   @override
   final String fullName;
   @override
-  final String phone;
+  final String? phone;
   @override
-  final String district;
+  final String? district;
   @override
   final int totalPoints;
   @override
@@ -314,8 +314,8 @@ abstract class _UserProfile implements UserProfile {
     required final int id,
     required final int userId,
     required final String fullName,
-    required final String phone,
-    required final String district,
+    final String? phone,
+    final String? district,
     required final int totalPoints,
     required final int totalCaps,
     required final int totalSessions,
@@ -331,9 +331,9 @@ abstract class _UserProfile implements UserProfile {
   @override
   String get fullName;
   @override
-  String get phone;
+  String? get phone;
   @override
-  String get district;
+  String? get district;
   @override
   int get totalPoints;
   @override
