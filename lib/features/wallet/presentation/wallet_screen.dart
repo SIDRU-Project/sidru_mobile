@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,24 +10,23 @@ import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/error_state.dart';
 import '../../../shared/widgets/loading_state.dart';
-import '../data/models/wallet_balance.dart';
+import '../data/models/wallet_summary.dart';
 import '../data/models/wallet_transaction.dart';
 import '../utils/wallet_formatters.dart';
 import 'wallet_provider.dart';
 import 'widgets/withdraw_sheet.dart';
 
-/// WalletScreen — saldo CTC on-chain, dirección custodial, red activa y
-/// transacciones recientes con acceso al explorador (RF-19, US-BC-04/05/06).
+/// WalletScreen — saldo en puntos (spec sidru-mainnet: emisión al retirar) y
+/// enlace al retiro en CTC/USDC, con historial de retiros.
 ///
 /// Consume el backend vía la cadena C4 (Provider → Repository → Api → ApiClient).
-/// No inventa saldo ni monto de transacciones: el balance es `balanceOf` y las
-/// transacciones NO traen monto.
+/// El saldo es `UserProfile.totalPoints` (US-MN-05): la app no calcula ni inventa
+/// un balance on-chain, solo muestra las equivalencias que ya entrega el backend.
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
 
-  static const _explorerBase = 'https://amoy.polygonscan.com';
-
-  Future<void> _openUrl(BuildContext context, String url) async {
+  Future<void> _openUrl(BuildContext context, String? url) async {
+    if (url == null) return;
     final uri = Uri.tryParse(url);
     if (uri == null || !await canLaunchUrl(uri)) {
       if (context.mounted) {
@@ -35,11 +35,6 @@ class WalletScreen extends ConsumerWidget {
       return;
     }
     await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-
-  void _copy(BuildContext context, String value, String label) {
-    Clipboard.setData(ClipboardData(text: value));
-    _toast(context, '$label copiada');
   }
 
   void _toast(BuildContext context, String message) {
@@ -52,6 +47,55 @@ class WalletScreen extends ConsumerWidget {
           behavior: SnackBarBehavior.floating,
         ),
       );
+  }
+
+  Future<void> _openWithdrawSheet(
+    BuildContext context,
+    WidgetRef ref,
+    WalletSummary summary,
+  ) async {
+    final transaction = await WithdrawSheet.show(
+      context,
+      pointsBalance: summary.pointsBalance,
+      minWithdrawalPoints: summary.minWithdrawalPoints,
+    );
+    if (transaction == null || !context.mounted) return;
+
+    if (transaction.status == 'EN_PROCESO') {
+      _toast(context, 'Retiro en proceso. Te avisaremos cuando confirme.');
+      // Fire-and-forget: no bloquea la pantalla mientras se espera la cadena.
+      unawaited(_pollAndNotify(context, ref, transaction.id));
+    } else {
+      _toast(
+        context,
+        transaction.status == 'COMPLETADO'
+            ? 'Retiro completado.'
+            : 'No se pudo completar el retiro.',
+      );
+    }
+  }
+
+  Future<void> _pollAndNotify(
+    BuildContext context,
+    WidgetRef ref,
+    int withdrawalId,
+  ) async {
+    final result = await ref
+        .read(walletWithdrawControllerProvider)
+        .pollWithdrawal(withdrawalId);
+    if (!context.mounted) return;
+
+    switch (result) {
+      case WithdrawPollResolved(:final transaction):
+        _toast(
+          context,
+          transaction.status == 'COMPLETADO'
+              ? 'Retiro completado.'
+              : 'No se pudo completar el retiro.',
+        );
+      case WithdrawPollTimedOut():
+        _toast(context, 'Seguimos procesando tu retiro, te avisaremos.');
+    }
   }
 
   @override
@@ -87,8 +131,8 @@ class WalletScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 AppHeader(
-                  title: 'Mi Wallet CTC',
-                  subtitle: 'Polygon Amoy',
+                  title: 'Mi Wallet',
+                  subtitle: walletAsync.value?.summary.network ?? '',
                   showBack: context.canPop(),
                   onBack: context.canPop() ? () => context.pop() : null,
                 ),
@@ -112,15 +156,16 @@ class WalletScreen extends ConsumerWidget {
                               () => ref.read(walletProvider.notifier).refresh(),
                         );
                       }
-                      // Sin conexión se muestra el último saldo conocido, señalado
-                      // como tal para no hacerlo pasar por el saldo vigente (CP019).
-                      final wallet = snapshot.balance;
+                      // Sin conexión se muestra el último resumen conocido,
+                      // señalado como tal para no hacerlo pasar por el saldo
+                      // vigente (CP019).
+                      final summary = snapshot.summary;
                       return RefreshIndicator(
                         color: AppColors.primary,
                         backgroundColor: AppColors.surface,
                         onRefresh: () async {
                           await ref.read(walletProvider.notifier).refresh();
-                          ref.invalidate(walletTransactionsProvider);
+                          ref.invalidate(walletWithdrawalsProvider);
                         },
                         child: ListView(
                           physics: const AlwaysScrollableScrollPhysics(
@@ -129,38 +174,26 @@ class WalletScreen extends ConsumerWidget {
                           padding: EdgeInsets.fromLTRB(20, 4, 20, bottomPad),
                           children: [
                             if (snapshot.fromCache) const _OfflineBanner(),
-                            _BalanceCard(
-                              wallet: wallet,
-                              onCopyAddress:
-                                  () => _copy(
-                                    context,
-                                    wallet.address,
-                                    'Dirección',
-                                  ),
-                              onOpenAddress:
-                                  () => _openUrl(
-                                    context,
-                                    '$_explorerBase/address/${wallet.address}',
-                                  ),
-                            ),
+                            _BalanceCard(summary: summary),
                             const SizedBox(height: 14),
-                            if (wallet.linkedWallet != null &&
-                                wallet.linkedWallet!.isNotEmpty) ...[
-                              _LinkedWalletRow(address: wallet.linkedWallet!),
+                            if (summary.linkedWallet != null &&
+                                summary.linkedWallet!.isNotEmpty) ...[
+                              _LinkedWalletRow(address: summary.linkedWallet!),
                               const SizedBox(height: 14),
                             ],
                             _WithdrawButton(
-                              onTap: () async {
-                                await WithdrawSheet.show(
-                                  context,
-                                  balanceCtc: wallet.balanceCtc,
-                                );
-                              },
+                              enabled: summary.withdrawalsEnabled,
+                              onTap:
+                                  () => _openWithdrawSheet(
+                                    context,
+                                    ref,
+                                    summary,
+                                  ),
                             ),
                             const SizedBox(height: 22),
-                            const _SectionLabel('MOVIMIENTOS RECIENTES'),
+                            const _SectionLabel('RETIROS'),
                             const SizedBox(height: 10),
-                            _TransactionList(
+                            _WithdrawalList(
                               onOpen: (url) => _openUrl(context, url),
                             ),
                           ],
@@ -178,10 +211,10 @@ class WalletScreen extends ConsumerWidget {
   }
 }
 
-// Card hero de balance
+// Card hero de saldo
 
-/// Indicador de modo offline: el saldo mostrado es el último conocido, no el saldo
-/// on-chain vigente (CP019, paso 4).
+/// Indicador de modo offline: el saldo mostrado es el último conocido, no el
+/// vigente (CP019, paso 4).
 class _OfflineBanner extends StatelessWidget {
   const _OfflineBanner();
 
@@ -215,15 +248,9 @@ class _OfflineBanner extends StatelessWidget {
 }
 
 class _BalanceCard extends StatelessWidget {
-  final WalletBalance wallet;
-  final VoidCallback onCopyAddress;
-  final VoidCallback onOpenAddress;
+  final WalletSummary summary;
 
-  const _BalanceCard({
-    required this.wallet,
-    required this.onCopyAddress,
-    required this.onOpenAddress,
-  });
+  const _BalanceCard({required this.summary});
 
   @override
   Widget build(BuildContext context) {
@@ -245,7 +272,7 @@ class _BalanceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'SALDO DISPONIBLE',
+            'PUNTOS DISPONIBLES',
             style: TextStyle(
               fontFamily: 'monospace',
               fontSize: 10,
@@ -264,7 +291,7 @@ class _BalanceCard extends StatelessWidget {
                   shaderCallback:
                       (b) => AppColors.primaryGradient.createShader(b),
                   child: Text(
-                    wallet.balanceCtc,
+                    '${summary.pointsBalance}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -281,7 +308,7 @@ class _BalanceCard extends StatelessWidget {
               const Padding(
                 padding: EdgeInsets.only(bottom: 4),
                 child: Text(
-                  'CTC',
+                  'pts',
                   style: TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 16,
@@ -294,7 +321,7 @@ class _BalanceCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '≈ S/ ${wallet.solesRef} (estimado)',
+            '≈ ${summary.ctcEquivalent} CTC · S/ ${summary.solesEquivalent}',
             style: const TextStyle(
               fontSize: 12.5,
               color: AppColors.textSecondary,
@@ -311,63 +338,24 @@ class _BalanceCard extends StatelessWidget {
             child: Row(
               children: [
                 const Icon(
-                  Icons.account_balance_wallet_outlined,
+                  Icons.info_outline_rounded,
                   color: AppColors.textTertiary,
                   size: 16,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    WalletFormatters.truncate(wallet.address),
+                    'Mínimo de retiro: ${summary.minWithdrawalPoints} puntos',
                     style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 13,
+                      fontSize: 12,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                ),
-                _IconAction(
-                  icon: Icons.copy_rounded,
-                  tooltip: 'Copiar dirección',
-                  onTap: onCopyAddress,
-                ),
-                const SizedBox(width: 4),
-                _IconAction(
-                  icon: Icons.open_in_new_rounded,
-                  tooltip: 'Ver en Polygonscan',
-                  onTap: onOpenAddress,
                 ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _IconAction extends StatelessWidget {
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback onTap;
-
-  const _IconAction({
-    required this.icon,
-    required this.tooltip,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: InkResponse(
-        onTap: onTap,
-        radius: 20,
-        child: Padding(
-          padding: const EdgeInsets.all(4),
-          child: Icon(icon, color: AppColors.secondary, size: 17),
-        ),
       ),
     );
   }
@@ -431,64 +419,89 @@ class _LinkedWalletRow extends StatelessWidget {
 // Botón de retiro
 
 class _WithdrawButton extends StatelessWidget {
+  final bool enabled;
   final VoidCallback onTap;
-  const _WithdrawButton({required this.onTap});
+  const _WithdrawButton({required this.enabled, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(14),
-            child: const Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.north_east_rounded,
-                    color: AppColors.primary,
-                    size: 18,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color:
+                    enabled
+                        ? AppColors.primary.withValues(alpha: 0.3)
+                        : AppColors.borderSubtle,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: enabled ? onTap : null,
+                borderRadius: BorderRadius.circular(14),
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.north_east_rounded,
+                        color:
+                            enabled
+                                ? AppColors.primary
+                                : AppColors.textTertiary,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Retirar',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              enabled
+                                  ? AppColors.primary
+                                  : AppColors.textTertiary,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Retirar a mi wallet',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
         ),
-      ),
+        if (!enabled) ...[
+          const SizedBox(height: 6),
+          const Text(
+            'Los retiros están temporalmente deshabilitados.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11.5, color: AppColors.textTertiary),
+          ),
+        ],
+      ],
     );
   }
 }
 
-// Lista de transacciones
+// Historial de retiros
 
-class _TransactionList extends ConsumerWidget {
-  final void Function(String url) onOpen;
-  const _TransactionList({required this.onOpen});
+class _WithdrawalList extends ConsumerWidget {
+  final void Function(String? url) onOpen;
+  const _WithdrawalList({required this.onOpen});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final txAsync = ref.watch(walletTransactionsProvider);
+    final withdrawalsAsync = ref.watch(walletWithdrawalsProvider);
 
-    return txAsync.when(
+    return withdrawalsAsync.when(
       loading:
           () => const Padding(
             padding: EdgeInsets.symmetric(vertical: 40),
@@ -501,27 +514,30 @@ class _TransactionList extends ConsumerWidget {
               message:
                   err is ApiException
                       ? err.message
-                      : 'No se pudieron cargar tus movimientos.',
-              onRetry: () => ref.invalidate(walletTransactionsProvider),
+                      : 'No se pudieron cargar tus retiros.',
+              onRetry: () => ref.invalidate(walletWithdrawalsProvider),
             ),
           ),
-      data: (txs) {
-        if (txs.isEmpty) {
+      data: (withdrawals) {
+        if (withdrawals.isEmpty) {
           return const Padding(
             padding: EdgeInsets.symmetric(vertical: 24),
             child: EmptyState(
               icon: Icons.receipt_long_outlined,
-              title: 'Aún no tienes movimientos',
+              title: 'Aún no tienes retiros',
               subtitle:
-                  'Cuando recicles o retires CTC, tus transacciones aparecerán '
-                  'aquí con enlace a Polygonscan.',
+                  'Cuando retires puntos a CTC o USDC, aparecerán aquí con su '
+                  'estado y enlace al explorador.',
             ),
           );
         }
         return Column(
           children: [
-            for (final tx in txs) ...[
-              _TransactionTile(tx: tx, onOpen: () => onOpen(tx.explorerUrl)),
+            for (final withdrawal in withdrawals) ...[
+              _WithdrawalTile(
+                withdrawal: withdrawal,
+                onOpen: () => onOpen(withdrawal.explorerUrl),
+              ),
               const SizedBox(height: 10),
             ],
           ],
@@ -531,24 +547,14 @@ class _TransactionList extends ConsumerWidget {
   }
 }
 
-class _TransactionTile extends StatelessWidget {
-  final WalletTransaction tx;
+class _WithdrawalTile extends StatelessWidget {
+  final WalletTransaction withdrawal;
   final VoidCallback onOpen;
 
-  const _TransactionTile({required this.tx, required this.onOpen});
-
-  bool get _isMint => tx.type == WalletTransactionType.mint;
+  const _WithdrawalTile({required this.withdrawal, required this.onOpen});
 
   @override
   Widget build(BuildContext context) {
-    final color = _isMint ? AppColors.primary : AppColors.secondary;
-    final icon = _isMint ? Icons.south_west_rounded : Icons.north_east_rounded;
-    final label = switch (tx.type) {
-      WalletTransactionType.mint => 'Recompensa',
-      WalletTransactionType.withdraw => 'Retiro',
-      WalletTransactionType.unknown => 'Transacción',
-    };
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -562,10 +568,14 @@ class _TransactionTile extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
+              color: AppColors.secondary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(11),
             ),
-            child: Icon(icon, color: color, size: 18),
+            child: const Icon(
+              Icons.north_east_rounded,
+              color: AppColors.secondary,
+              size: 18,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -575,7 +585,7 @@ class _TransactionTile extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      label,
+                      '${withdrawal.points} pts · ${withdrawal.mode}',
                       style: const TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w600,
@@ -583,12 +593,19 @@ class _TransactionTile extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    _StatusChip(status: tx.status),
+                    _StatusChip(status: withdrawal.status),
                   ],
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  WalletFormatters.truncate(tx.txHash, head: 10, tail: 8),
+                  withdrawal.failureReason ??
+                      (withdrawal.txHash != null
+                          ? WalletFormatters.truncate(
+                            withdrawal.txHash!,
+                            head: 10,
+                            tail: 8,
+                          )
+                          : 'Sin confirmar aún'),
                   style: const TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 11,
@@ -598,12 +615,40 @@ class _TransactionTile extends StatelessWidget {
               ],
             ),
           ),
-          _IconAction(
-            icon: Icons.open_in_new_rounded,
-            tooltip: 'Ver en Polygonscan',
-            onTap: onOpen,
-          ),
+          if (withdrawal.explorerUrl != null)
+            _IconAction(
+              icon: Icons.open_in_new_rounded,
+              tooltip: 'Ver en el explorador',
+              onTap: onOpen,
+            ),
         ],
+      ),
+    );
+  }
+}
+
+class _IconAction extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  const _IconAction({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: InkResponse(
+        onTap: onTap,
+        radius: 20,
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Icon(icon, color: AppColors.secondary, size: 17),
+        ),
       ),
     );
   }
@@ -617,13 +662,9 @@ class _StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final upper = status.toUpperCase();
     final (Color color, String text) = switch (upper) {
-      'COMPLETADO' ||
-      'CONFIRMED' ||
-      'CONFIRMADO' => (AppColors.success, 'Confirmada'),
-      'EN_PROCESO' ||
-      'PENDING' ||
-      'PENDIENTE' => (AppColors.warning, 'Pendiente'),
-      'FALLIDO' || 'FAILED' || 'ERROR' => (AppColors.error, 'Fallida'),
+      'COMPLETADO' => (AppColors.success, 'Completado'),
+      'EN_PROCESO' => (AppColors.warning, 'En proceso'),
+      'FALLIDO' => (AppColors.error, 'Fallido'),
       _ => (AppColors.textTertiary, status),
     };
 

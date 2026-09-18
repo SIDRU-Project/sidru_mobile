@@ -1,23 +1,23 @@
-import 'wallet_balance.dart';
+import 'wallet_summary.dart';
 
 /// Estado de la wallet tal como lo consume la pantalla, junto con su procedencia.
 ///
-/// `fromCache = false` → el saldo viene de consultar `balanceOf` on-chain a través del
-/// backend: es el saldo real y vigente (CP019, pasos 1-3).
-/// `fromCache = true`  → no hubo conexión y se está mostrando el último saldo conocido.
-/// La pantalla debe señalarlo con el indicador de modo offline (CP019, paso 4), porque
-/// un saldo cacheado puede haber quedado desactualizado.
+/// `fromCache = false` → el resumen viene de consultar `/wallet/me` recién: es el
+/// saldo de puntos vigente (CP019, pasos 1-3).
+/// `fromCache = true`  → no hubo conexión y se está mostrando el último resumen
+/// conocido. La pantalla debe señalarlo con el indicador de modo offline (CP019,
+/// paso 4), porque puede haber quedado desactualizado.
 class WalletSnapshot {
-  final WalletBalance balance;
+  final WalletSummary summary;
   final bool fromCache;
 
-  const WalletSnapshot({required this.balance, this.fromCache = false});
+  const WalletSnapshot({required this.summary, this.fromCache = false});
 
   /// Snapshot en vivo, recién traído del backend.
-  const WalletSnapshot.live(WalletBalance balance)
-    : this(balance: balance, fromCache: false);
+  const WalletSnapshot.live(WalletSummary summary)
+    : this(summary: summary, fromCache: false);
 
   /// Snapshot servido desde el caché local por falta de conexión.
-  const WalletSnapshot.cached(WalletBalance balance)
-    : this(balance: balance, fromCache: true);
+  const WalletSnapshot.cached(WalletSummary summary)
+    : this(summary: summary, fromCache: true);
 }

@@ -21,12 +21,18 @@ WalletTransaction _$WalletTransactionFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$WalletTransaction {
-  // ignore: invalid_annotation_target
-  @JsonKey(unknownEnumValue: WalletTransactionType.unknown)
-  WalletTransactionType get type => throw _privateConstructorUsedError;
-  String get txHash => throw _privateConstructorUsedError;
+  int get id => throw _privateConstructorUsedError;
+  String get mode => throw _privateConstructorUsedError;
+  int get points => throw _privateConstructorUsedError;
+  String get amountWei => throw _privateConstructorUsedError;
+  String get toAddress => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
-  String get explorerUrl => throw _privateConstructorUsedError;
+  String? get txHash => throw _privateConstructorUsedError;
+  String? get explorerUrl => throw _privateConstructorUsedError;
+  String? get failureReason => throw _privateConstructorUsedError;
+  String? get reserveOut => throw _privateConstructorUsedError;
+  DateTime get createdAt => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this WalletTransaction to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -46,11 +52,18 @@ abstract class $WalletTransactionCopyWith<$Res> {
   ) = _$WalletTransactionCopyWithImpl<$Res, WalletTransaction>;
   @useResult
   $Res call({
-    @JsonKey(unknownEnumValue: WalletTransactionType.unknown)
-    WalletTransactionType type,
-    String txHash,
+    int id,
+    String mode,
+    int points,
+    String amountWei,
+    String toAddress,
     String status,
-    String explorerUrl,
+    String? txHash,
+    String? explorerUrl,
+    String? failureReason,
+    String? reserveOut,
+    DateTime createdAt,
+    DateTime updatedAt,
   });
 }
 
@@ -69,33 +82,81 @@ class _$WalletTransactionCopyWithImpl<$Res, $Val extends WalletTransaction>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? type = null,
-    Object? txHash = null,
+    Object? id = null,
+    Object? mode = null,
+    Object? points = null,
+    Object? amountWei = null,
+    Object? toAddress = null,
     Object? status = null,
-    Object? explorerUrl = null,
+    Object? txHash = freezed,
+    Object? explorerUrl = freezed,
+    Object? failureReason = freezed,
+    Object? reserveOut = freezed,
+    Object? createdAt = null,
+    Object? updatedAt = null,
   }) {
     return _then(
       _value.copyWith(
-            type:
-                null == type
-                    ? _value.type
-                    : type // ignore: cast_nullable_to_non_nullable
-                        as WalletTransactionType,
-            txHash:
-                null == txHash
-                    ? _value.txHash
-                    : txHash // ignore: cast_nullable_to_non_nullable
+            id:
+                null == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int,
+            mode:
+                null == mode
+                    ? _value.mode
+                    : mode // ignore: cast_nullable_to_non_nullable
+                        as String,
+            points:
+                null == points
+                    ? _value.points
+                    : points // ignore: cast_nullable_to_non_nullable
+                        as int,
+            amountWei:
+                null == amountWei
+                    ? _value.amountWei
+                    : amountWei // ignore: cast_nullable_to_non_nullable
+                        as String,
+            toAddress:
+                null == toAddress
+                    ? _value.toAddress
+                    : toAddress // ignore: cast_nullable_to_non_nullable
                         as String,
             status:
                 null == status
                     ? _value.status
                     : status // ignore: cast_nullable_to_non_nullable
                         as String,
+            txHash:
+                freezed == txHash
+                    ? _value.txHash
+                    : txHash // ignore: cast_nullable_to_non_nullable
+                        as String?,
             explorerUrl:
-                null == explorerUrl
+                freezed == explorerUrl
                     ? _value.explorerUrl
                     : explorerUrl // ignore: cast_nullable_to_non_nullable
-                        as String,
+                        as String?,
+            failureReason:
+                freezed == failureReason
+                    ? _value.failureReason
+                    : failureReason // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            reserveOut:
+                freezed == reserveOut
+                    ? _value.reserveOut
+                    : reserveOut // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            createdAt:
+                null == createdAt
+                    ? _value.createdAt
+                    : createdAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+            updatedAt:
+                null == updatedAt
+                    ? _value.updatedAt
+                    : updatedAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
           )
           as $Val,
     );
@@ -112,11 +173,18 @@ abstract class _$$WalletTransactionImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    @JsonKey(unknownEnumValue: WalletTransactionType.unknown)
-    WalletTransactionType type,
-    String txHash,
+    int id,
+    String mode,
+    int points,
+    String amountWei,
+    String toAddress,
     String status,
-    String explorerUrl,
+    String? txHash,
+    String? explorerUrl,
+    String? failureReason,
+    String? reserveOut,
+    DateTime createdAt,
+    DateTime updatedAt,
   });
 }
 
@@ -134,33 +202,81 @@ class __$$WalletTransactionImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? type = null,
-    Object? txHash = null,
+    Object? id = null,
+    Object? mode = null,
+    Object? points = null,
+    Object? amountWei = null,
+    Object? toAddress = null,
     Object? status = null,
-    Object? explorerUrl = null,
+    Object? txHash = freezed,
+    Object? explorerUrl = freezed,
+    Object? failureReason = freezed,
+    Object? reserveOut = freezed,
+    Object? createdAt = null,
+    Object? updatedAt = null,
   }) {
     return _then(
       _$WalletTransactionImpl(
-        type:
-            null == type
-                ? _value.type
-                : type // ignore: cast_nullable_to_non_nullable
-                    as WalletTransactionType,
-        txHash:
-            null == txHash
-                ? _value.txHash
-                : txHash // ignore: cast_nullable_to_non_nullable
+        id:
+            null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int,
+        mode:
+            null == mode
+                ? _value.mode
+                : mode // ignore: cast_nullable_to_non_nullable
+                    as String,
+        points:
+            null == points
+                ? _value.points
+                : points // ignore: cast_nullable_to_non_nullable
+                    as int,
+        amountWei:
+            null == amountWei
+                ? _value.amountWei
+                : amountWei // ignore: cast_nullable_to_non_nullable
+                    as String,
+        toAddress:
+            null == toAddress
+                ? _value.toAddress
+                : toAddress // ignore: cast_nullable_to_non_nullable
                     as String,
         status:
             null == status
                 ? _value.status
                 : status // ignore: cast_nullable_to_non_nullable
                     as String,
+        txHash:
+            freezed == txHash
+                ? _value.txHash
+                : txHash // ignore: cast_nullable_to_non_nullable
+                    as String?,
         explorerUrl:
-            null == explorerUrl
+            freezed == explorerUrl
                 ? _value.explorerUrl
                 : explorerUrl // ignore: cast_nullable_to_non_nullable
-                    as String,
+                    as String?,
+        failureReason:
+            freezed == failureReason
+                ? _value.failureReason
+                : failureReason // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        reserveOut:
+            freezed == reserveOut
+                ? _value.reserveOut
+                : reserveOut // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        createdAt:
+            null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+        updatedAt:
+            null == updatedAt
+                ? _value.updatedAt
+                : updatedAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
       ),
     );
   }
@@ -170,30 +286,51 @@ class __$$WalletTransactionImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$WalletTransactionImpl implements _WalletTransaction {
   const _$WalletTransactionImpl({
-    @JsonKey(unknownEnumValue: WalletTransactionType.unknown)
-    required this.type,
-    required this.txHash,
+    required this.id,
+    required this.mode,
+    required this.points,
+    required this.amountWei,
+    required this.toAddress,
     required this.status,
-    required this.explorerUrl,
+    this.txHash,
+    this.explorerUrl,
+    this.failureReason,
+    this.reserveOut,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   factory _$WalletTransactionImpl.fromJson(Map<String, dynamic> json) =>
       _$$WalletTransactionImplFromJson(json);
 
-  // ignore: invalid_annotation_target
   @override
-  @JsonKey(unknownEnumValue: WalletTransactionType.unknown)
-  final WalletTransactionType type;
+  final int id;
   @override
-  final String txHash;
+  final String mode;
+  @override
+  final int points;
+  @override
+  final String amountWei;
+  @override
+  final String toAddress;
   @override
   final String status;
   @override
-  final String explorerUrl;
+  final String? txHash;
+  @override
+  final String? explorerUrl;
+  @override
+  final String? failureReason;
+  @override
+  final String? reserveOut;
+  @override
+  final DateTime createdAt;
+  @override
+  final DateTime updatedAt;
 
   @override
   String toString() {
-    return 'WalletTransaction(type: $type, txHash: $txHash, status: $status, explorerUrl: $explorerUrl)';
+    return 'WalletTransaction(id: $id, mode: $mode, points: $points, amountWei: $amountWei, toAddress: $toAddress, status: $status, txHash: $txHash, explorerUrl: $explorerUrl, failureReason: $failureReason, reserveOut: $reserveOut, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -201,17 +338,44 @@ class _$WalletTransactionImpl implements _WalletTransaction {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$WalletTransactionImpl &&
-            (identical(other.type, type) || other.type == type) &&
-            (identical(other.txHash, txHash) || other.txHash == txHash) &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.mode, mode) || other.mode == mode) &&
+            (identical(other.points, points) || other.points == points) &&
+            (identical(other.amountWei, amountWei) ||
+                other.amountWei == amountWei) &&
+            (identical(other.toAddress, toAddress) ||
+                other.toAddress == toAddress) &&
             (identical(other.status, status) || other.status == status) &&
+            (identical(other.txHash, txHash) || other.txHash == txHash) &&
             (identical(other.explorerUrl, explorerUrl) ||
-                other.explorerUrl == explorerUrl));
+                other.explorerUrl == explorerUrl) &&
+            (identical(other.failureReason, failureReason) ||
+                other.failureReason == failureReason) &&
+            (identical(other.reserveOut, reserveOut) ||
+                other.reserveOut == reserveOut) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, type, txHash, status, explorerUrl);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    mode,
+    points,
+    amountWei,
+    toAddress,
+    status,
+    txHash,
+    explorerUrl,
+    failureReason,
+    reserveOut,
+    createdAt,
+    updatedAt,
+  );
 
   /// Create a copy of WalletTransaction
   /// with the given fields replaced by the non-null parameter values.
@@ -232,26 +396,47 @@ class _$WalletTransactionImpl implements _WalletTransaction {
 
 abstract class _WalletTransaction implements WalletTransaction {
   const factory _WalletTransaction({
-    @JsonKey(unknownEnumValue: WalletTransactionType.unknown)
-    required final WalletTransactionType type,
-    required final String txHash,
+    required final int id,
+    required final String mode,
+    required final int points,
+    required final String amountWei,
+    required final String toAddress,
     required final String status,
-    required final String explorerUrl,
+    final String? txHash,
+    final String? explorerUrl,
+    final String? failureReason,
+    final String? reserveOut,
+    required final DateTime createdAt,
+    required final DateTime updatedAt,
   }) = _$WalletTransactionImpl;
 
   factory _WalletTransaction.fromJson(Map<String, dynamic> json) =
       _$WalletTransactionImpl.fromJson;
 
-  // ignore: invalid_annotation_target
   @override
-  @JsonKey(unknownEnumValue: WalletTransactionType.unknown)
-  WalletTransactionType get type;
+  int get id;
   @override
-  String get txHash;
+  String get mode;
+  @override
+  int get points;
+  @override
+  String get amountWei;
+  @override
+  String get toAddress;
   @override
   String get status;
   @override
-  String get explorerUrl;
+  String? get txHash;
+  @override
+  String? get explorerUrl;
+  @override
+  String? get failureReason;
+  @override
+  String? get reserveOut;
+  @override
+  DateTime get createdAt;
+  @override
+  DateTime get updatedAt;
 
   /// Create a copy of WalletTransaction
   /// with the given fields replaced by the non-null parameter values.

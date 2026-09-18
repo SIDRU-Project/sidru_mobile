@@ -1,64 +1,66 @@
 import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/network_error_mapper.dart';
-import 'models/wallet_balance.dart';
+import 'models/wallet_summary.dart';
 import 'models/wallet_transaction.dart';
-import 'models/withdrawal_status.dart';
 
-/// Datasource HTTP de la wallet CTC del ciudadano.
-/// Cadena C4: WalletRepository → WalletApi → ApiClient → JwtInterceptor.
+/// Datasource HTTP de la wallet del ciudadano (spec sidru-mainnet: retiro desde
+/// puntos). Cadena C4: WalletRepository → WalletApi → ApiClient → JwtInterceptor.
 /// Las pantallas nunca usan Dio directamente.
 class WalletApi {
   final ApiClient _client;
 
   WalletApi(this._client);
 
-  /// GET /wallet/me — dirección custodial, red, balance CTC y wallet vinculada.
-  Future<WalletBalance> getWallet() async {
+  /// GET /wallet/me — saldo en puntos, equivalencias, red y wallet vinculada.
+  Future<WalletSummary> getWallet() async {
     try {
       final res = await _client.get('/wallet/me');
-      return WalletBalance.fromJson(res.data as Map<String, dynamic>);
+      return WalletSummary.fromJson(res.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw NetworkErrorMapper.map(e);
     }
   }
 
-  /// GET /wallet/me/transactions — transacciones on-chain del usuario.
-  Future<List<WalletTransaction>> getTransactions() async {
+  /// POST /wallet/withdraw — inicia un retiro de [points] puntos en modo [mode]
+  /// ("CTC" o "USDC") hacia [toAddress]. HTTP 202 (EN_PROCESO) y 200 (resultado
+  /// final, COMPLETADO o FALLIDO) son ambos éxito: el backend siempre devuelve el
+  /// estado del retiro en el cuerpo.
+  Future<WalletTransaction> withdraw({
+    required String toAddress,
+    required int points,
+    required String mode,
+  }) async {
     try {
-      final res = await _client.get('/wallet/me/transactions');
+      final res = await _client.post(
+        '/wallet/withdraw',
+        data: {'toAddress': toAddress, 'points': points, 'mode': mode},
+      );
+      return WalletTransaction.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw NetworkErrorMapper.map(e);
+    }
+  }
+
+  /// GET /wallet/withdraw/{id} — estado de un retiro puntual (para el polling).
+  Future<WalletTransaction> getWithdrawal(int id) async {
+    try {
+      final res = await _client.get('/wallet/withdraw/$id');
+      return WalletTransaction.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw NetworkErrorMapper.map(e);
+    }
+  }
+
+  /// GET /wallet/me/withdrawals — historial de retiros, del más reciente al más
+  /// antiguo. Reemplaza a GET /wallet/me/transactions (eliminado en el backend).
+  Future<List<WalletTransaction>> getWithdrawals() async {
+    try {
+      final res = await _client.get('/wallet/me/withdrawals');
       final data = (res.data as List<dynamic>?) ?? const [];
       return data
           .map((e) => WalletTransaction.fromJson(e as Map<String, dynamic>))
           .toList();
-    } on DioException catch (e) {
-      throw NetworkErrorMapper.map(e);
-    }
-  }
-
-  /// POST /wallet/withdraw — inicia el retiro idempotente del saldo completo
-  /// hacia `toAddress`. El backend revalida el checksum EIP-55.
-  Future<WithdrawalStatus> withdraw(String toAddress) async {
-    try {
-      final res = await _client.post(
-        '/wallet/withdraw',
-        data: {'toAddress': toAddress},
-      );
-      return WithdrawalStatus.fromJson(res.data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      throw NetworkErrorMapper.map(e);
-    }
-  }
-
-  /// GET /wallet/withdraw/status — estado del último retiro.
-  /// HTTP 204 (sin body) significa "no hay retiros" → devuelve null.
-  Future<WithdrawalStatus?> getWithdrawStatus() async {
-    try {
-      final res = await _client.get('/wallet/withdraw/status');
-      if (res.statusCode == 204 || res.data == null) return null;
-      final data = res.data;
-      if (data is! Map<String, dynamic>) return null;
-      return WithdrawalStatus.fromJson(data);
     } on DioException catch (e) {
       throw NetworkErrorMapper.map(e);
     }

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import 'models/wallet_balance.dart';
+import 'models/wallet_summary.dart';
 
 /// Almacén de una sola clave para el caché de la wallet.
 ///
@@ -48,19 +48,19 @@ class WalletCache {
 
   WalletCache(this._store);
 
-  Future<void> save(WalletBalance balance) async {
+  Future<void> save(WalletSummary summary) async {
     try {
-      await _store.write(jsonEncode(balance.toJson()));
+      await _store.write(jsonEncode(summary.toJson()));
     } catch (_) {
       // El caché es un extra: si no se puede guardar, la app sigue funcionando.
     }
   }
 
-  Future<WalletBalance?> read() async {
+  Future<WalletSummary?> read() async {
     try {
       final raw = await _store.read();
       if (raw == null || raw.isEmpty) return null;
-      return WalletBalance.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      return WalletSummary.fromJson(jsonDecode(raw) as Map<String, dynamic>);
     } catch (_) {
       return null;
     }
