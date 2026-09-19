@@ -32,6 +32,10 @@ final sessionListProvider =
 class SessionListNotifier extends AsyncNotifier<List<RecyclingSession>> {
   @override
   Future<List<RecyclingSession>> build() async {
+    final (authenticated, _) = ref.watch(
+      authNotifierProvider.select((a) => (a.state.isAuthenticated, a.sessionEpoch)),
+    );
+    if (!authenticated) return const [];
     return _load();
   }
 
@@ -65,6 +69,10 @@ final sessionDetailProvider = FutureProvider.family<RecyclingSession, int>((
   ref,
   id,
 ) async {
+  final (authenticated, _) = ref.watch(
+    authNotifierProvider.select((a) => (a.state.isAuthenticated, a.sessionEpoch)),
+  );
+  if (!authenticated) throw StateError('sin sesión');
   try {
     return await ref.read(sessionRepositoryProvider).getSessionById(id);
   } on ApiException catch (e) {

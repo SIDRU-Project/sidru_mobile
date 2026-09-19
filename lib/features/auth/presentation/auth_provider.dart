@@ -110,12 +110,19 @@ class AuthNotifierState {
 ///   signIn()  → POST /authentication/sign-in → guarda JWT → isAuthenticated = true
 ///   signUp()  → POST /authentication/sign-up → devuelve bool (UI navega a login)
 ///   logout()  → borra JWT → isAuthenticated = false
+///
+/// Cada vez que una sesión empieza o termina (signIn/restauración exitosos, logout,
+/// expiración) se incrementa [sessionEpoch]. Los providers por-usuario lo observan junto
+/// a isAuthenticated para reconstruirse en cada cambio de sesión, incluso si isAuthenticated
+/// no cambia entre dos sesiones consecutivas.
 class AuthNotifier extends ChangeNotifier {
   final AuthRepository _repository;
   final FcmHandler _fcmHandler;
   AuthNotifierState _state = const AuthNotifierState(isInitializing: true);
+  int _sessionEpoch = 0;
 
   AuthNotifierState get state => _state;
+  int get sessionEpoch => _sessionEpoch;
 
   AuthNotifier(this._repository, this._fcmHandler) {
     _restoreSession();
@@ -132,6 +139,7 @@ class AuthNotifier extends ChangeNotifier {
     try {
       final profile = await _repository.tryRestoreSession();
       if (profile != null) {
+        _sessionEpoch++;
         _update(_state.withAuthenticated(profile.fullName));
         // FCM: suscribe al ciudadano a su topic user-{userId} (best-effort).
         unawaited(_fcmHandler.subscribeToUser(profile.userId));
@@ -149,6 +157,7 @@ class AuthNotifier extends ChangeNotifier {
     _update(_state.withLoading());
     try {
       final response = await _repository.signIn(email, password);
+      _sessionEpoch++;
       _update(_state.withAuthenticated(response.email));
       // FCM: suscribe al ciudadano a su topic user-{userId} (best-effort).
       unawaited(_fcmHandler.subscribeToUser(response.id));
@@ -197,23 +206,35 @@ class AuthNotifier extends ChangeNotifier {
   /// estado para que el router redirija y el usuario vea el motivo al volver a
   /// login. Ignora los 401 de sign-in/sign-up (aún no autenticado): esos los
   /// maneja cada flujo con su propio banner, sin pisarlos aquí.
-  void handleSessionExpired() {
+  Future<void> handleSessionExpired() async {
+    // La guarda + el incremento de epoch + _update van síncronos, antes del primer await:
+    // cierran la ventana de "autenticado" de inmediato, así que dos 401 en cadena (o un
+    // logout concurrente) no pueden pasar ambos la guarda y duplicar el borrado/epoch.
     if (!_state.isAuthenticated) return;
     unawaited(_fcmHandler.unsubscribeCurrent());
+    _sessionEpoch++;
     _update(
       const AuthNotifierState(
         errorMessage: 'Tu sesión expiró. Inicia sesión de nuevo.',
       ),
     );
+    // El interceptor ya borró el JWT; falta el resto del caché por-usuario (wallet, etc.).
+    await _repository.logout();
   }
 
   // Logout
 
   Future<void> logout() async {
+    // Idempotente: la guarda + el incremento de epoch + _update van síncronos, antes del
+    // primer await, para cerrar la ventana de inmediato. Si no, dos logout() concurrentes
+    // (o un 401 en cadena junto a un logout manual) pasarían ambos la guarda y producirían
+    // dos borrados y dos epochs.
+    if (!_state.isAuthenticated) return;
     // FCM: desuscribe del topic del usuario antes de limpiar la sesión (best-effort).
     unawaited(_fcmHandler.unsubscribeCurrent());
-    await _repository.logout();
+    _sessionEpoch++;
     _update(_state.cleared());
+    await _repository.logout();
   }
 
   // Utilidades

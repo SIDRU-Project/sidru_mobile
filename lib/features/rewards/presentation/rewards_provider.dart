@@ -27,7 +27,13 @@ final rewardsListProvider =
 
 class RewardsNotifier extends AsyncNotifier<List<Reward>> {
   @override
-  Future<List<Reward>> build() async => _load();
+  Future<List<Reward>> build() async {
+    final (authenticated, _) = ref.watch(
+      authNotifierProvider.select((a) => (a.state.isAuthenticated, a.sessionEpoch)),
+    );
+    if (!authenticated) return const [];
+    return _load();
+  }
 
   Future<List<Reward>> _load() async {
     try {
@@ -53,6 +59,10 @@ final rewardDetailProvider = FutureProvider.family<Reward, int>((
   ref,
   id,
 ) async {
+  final (authenticated, _) = ref.watch(
+    authNotifierProvider.select((a) => (a.state.isAuthenticated, a.sessionEpoch)),
+  );
+  if (!authenticated) throw StateError('sin sesión');
   return ref.read(rewardRepositoryProvider).getReward(id);
 });
 
@@ -65,7 +75,13 @@ final transactionsProvider =
 
 class TransactionsNotifier extends AsyncNotifier<List<PointTransaction>> {
   @override
-  Future<List<PointTransaction>> build() async => _load();
+  Future<List<PointTransaction>> build() async {
+    final (authenticated, _) = ref.watch(
+      authNotifierProvider.select((a) => (a.state.isAuthenticated, a.sessionEpoch)),
+    );
+    if (!authenticated) return const [];
+    return _load();
+  }
 
   Future<List<PointTransaction>> _load() async {
     try {

@@ -45,9 +45,9 @@ class AuthRepository {
     );
   }
 
-  /// Elimina el JWT. Llamado en logout y al recibir 401.
+  /// Borra la sesión completa (JWT y cachés por usuario). Llamado en logout y al recibir 401.
   Future<void> logout() async {
-    await _storage.deleteToken();
+    await _storage.clearSession();
   }
 
   /// Intenta restaurar la sesión leyendo el token guardado.

@@ -29,6 +29,10 @@ final userNotifierProvider = AsyncNotifierProvider<UserNotifier, UserProfile?>(
 class UserNotifier extends AsyncNotifier<UserProfile?> {
   @override
   Future<UserProfile?> build() async {
+    final (authenticated, _) = ref.watch(
+      authNotifierProvider.select((a) => (a.state.isAuthenticated, a.sessionEpoch)),
+    );
+    if (!authenticated) return null;
     return _fetchProfile();
   }
 
