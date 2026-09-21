@@ -41,14 +41,15 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // Identidad de la app en Google Play. NO cambiar tras la primera publicación:
+        // Play la fija para siempre.
         applicationId = "com.sidru.sidru_mobile"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         // minSdk fijo en 26 (Android 8.0+): requisito del proyecto y piso de los
         // plugins Firebase (firebase_core/messaging exigen minSdk >= 23).
         minSdk = 26
-        targetSdk = flutter.targetSdkVersion
+        // Fijo en 36: desde el 31-08-2026 Google Play exige que las apps nuevas
+        // apunten a Android 16 (API 36). Flutter 3.29 aún trae 35 por defecto.
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
