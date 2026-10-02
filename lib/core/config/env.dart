@@ -7,7 +7,8 @@ class Env {
 
   static String get apiBaseUrl {
     // Web: la app se sirve desde el mismo origen que la API (Caddy), así que por
-    // defecto usa `Uri.base.origin`. El `.env` no interviene (no se incluye en la web).
+    // defecto usa `Uri.base.origin`. El `.env` no interviene: aunque entra en el build web
+    // (es un asset), la web no lo lee y `deploy-web.sh` lo borra antes de publicar.
     if (kIsWeb) {
       return _webApiBaseUrl.isNotEmpty
           ? _webApiBaseUrl

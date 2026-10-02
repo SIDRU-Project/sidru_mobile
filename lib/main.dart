@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -6,6 +7,8 @@ import 'app.dart';
 import 'core/notifications/fcm_handler.dart';
 
 Future<void> main() async {
+  // Web: URLs sin '#' (/home en vez de /#/home). En móvil es un no-op.
+  usePathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
 
   // Cargar variables de entorno desde .env
