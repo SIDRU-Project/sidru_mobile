@@ -9,11 +9,15 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/gradient_button.dart';
 import '../../../shared/widgets/loading_state.dart';
 import '../../auth/presentation/auth_provider.dart';
+import '../../auth/presentation/google_sign_in_section.dart';
 
 /// Pantalla de bienvenida (landing) para usuarios no autenticados.
 /// Presenta la marca y los 3 caminos: crear cuenta, iniciar sesión y wallet.
 class OnboardingScreen extends ConsumerWidget {
-  const OnboardingScreen({super.key});
+  const OnboardingScreen({super.key, @visibleForTesting this.googleIsWeb});
+
+  /// Solo pruebas: fuerza web/nativo en la sección de Google (null = plataforma real).
+  final bool? googleIsWeb;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -59,8 +63,9 @@ class OnboardingScreen extends ConsumerWidget {
               builder: (context, constraints) {
                 return SingleChildScrollView(
                   child: ConstrainedBox(
-                    constraints:
-                        BoxConstraints(minHeight: constraints.maxHeight),
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
                     child: IntrinsicHeight(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -69,66 +74,74 @@ class OnboardingScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                  const SizedBox(height: 24),
+                            const SizedBox(height: 24),
 
-                  // Marca
-                  Row(
-                    children: [
-                      Image.asset(
-                        'assets/images/logo_mark.png',
-                        width: 40,
-                        height: 40,
-                        filterQuality: FilterQuality.high,
-                      ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        'SIDRU',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  Text('V0.1.0 · BETA · LIMA', style: AppTextStyles.labelMono),
+                            // Marca
+                            Row(
+                              children: [
+                                Image.asset(
+                                  'assets/images/logo_mark.png',
+                                  width: 40,
+                                  height: 40,
+                                  filterQuality: FilterQuality.high,
+                                ),
+                                const SizedBox(width: 10),
+                                const Text(
+                                  'SIDRU',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.textPrimary,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 18),
+                            Text(
+                              'V0.1.0 · BETA · LIMA',
+                              style: AppTextStyles.labelMono,
+                            ),
 
-                  const Spacer(flex: 2),
+                            const Spacer(flex: 2),
 
-                  // Hero
-                  const _HeroTitle(),
-                  const SizedBox(height: AppSpacing.lg),
-                  const Text(
-                    'Recicla chapas en Smart Bins de Lima.\n'
-                    'Gana eco-tokens on-chain. Repite.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      height: 1.55,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
+                            // Hero
+                            const _HeroTitle(),
+                            const SizedBox(height: AppSpacing.lg),
+                            const Text(
+                              'Recicla chapas en Smart Bins de Lima.\n'
+                              'Gana eco-tokens on-chain. Repite.',
+                              style: TextStyle(
+                                fontSize: 16,
+                                height: 1.55,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
 
-                  const Spacer(flex: 3),
+                            const Spacer(flex: 3),
 
-                  // CTAs
-                  GradientButton(
-                    label: 'Crear cuenta',
-                    onPressed: () => context.push(RouteNames.register),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  _OutlineButton(
-                    label: 'Iniciar sesión',
-                    onTap: () => context.push(RouteNames.login),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
+                            // CTAs
+                            GradientButton(
+                              label: 'Crear cuenta',
+                              onPressed:
+                                  () => context.push(RouteNames.register),
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            _OutlineButton(
+                              label: 'Iniciar sesión',
+                              onTap: () => context.push(RouteNames.login),
+                            ),
+                            // "o" + botón de Google: solo web y solo si /providers trae google.
+                            // Tras entrar, el router (redirect por sesión) manda a /complete-profile o
+                            // /home igual que desde /login: no depende de la ruta actual.
+                            GoogleSignInSection(isWeb: googleIsWeb),
+                            const SizedBox(height: AppSpacing.lg),
                           ],
                         ),
                       ),
                     ),
                   ),
-                  );
+                );
               },
             ),
           ),

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/google_button.dart';
@@ -14,7 +14,7 @@ import 'auth_provider.dart';
 /// sin hacer), así que no se muestra nada ni se inicializa el SDK. El código nativo
 /// (botón stub, serverClientId) queda listo para esa fase.
 class GoogleSignInSection extends ConsumerStatefulWidget {
-  const GoogleSignInSection({super.key, @visibleForTesting bool? isWeb})
+  const GoogleSignInSection({super.key, bool? isWeb})
     : isWeb = isWeb ?? kIsWeb;
 
   final bool isWeb;

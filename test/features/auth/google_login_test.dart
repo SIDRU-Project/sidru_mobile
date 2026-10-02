@@ -11,6 +11,8 @@ import 'package:sidru_mobile/features/auth/data/models/auth_providers.dart';
 import 'package:sidru_mobile/features/auth/data/models/sign_in_response.dart';
 import 'package:sidru_mobile/features/auth/presentation/auth_provider.dart';
 import 'package:sidru_mobile/features/auth/presentation/google_sign_in_section.dart';
+import 'package:sidru_mobile/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:go_router/go_router.dart';
 
 /// 4a.5 — login con Google: repositorio (token + newUser) y botón según /providers.
 
@@ -301,5 +303,90 @@ void main() {
         expect(result.password, isTrue);
       },
     );
+  });
+
+  group('OnboardingScreen con Google', () {
+    Future<void> pumpOnboarding(
+      WidgetTester tester,
+      AuthProviders providers, {
+      required bool isWeb,
+      Size size = const Size(390, 844),
+    }) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authProvidersProvider.overrideWith((ref) async => providers),
+            authRepositoryProvider.overrideWithValue(
+              AuthRepository(FakeAuthApi(), FakeStorage()),
+            ),
+            fcmHandlerProvider.overrideWithValue(FcmHandler()),
+            socialAuthServiceProvider.overrideWithValue(FakeSocial()),
+          ],
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (_, __) => OnboardingScreen(googleIsWeb: isWeb),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // Con la fuente de prueba (Ahem) el título de 64 pt desborda en horizontal por sí solo; se
+      // consume ese error de render. El desborde real se verifica en Chrome (360x640 y 390x844).
+      final e = tester.takeException();
+      expect(
+        e == null || e.toString().contains('overflowed'),
+        isTrue,
+        reason: '$e',
+      );
+    }
+
+    for (final size in const [Size(360, 640), Size(390, 844)]) {
+      testWidgets(
+        'en web con google muestra el botón sin overflow (${size.width.toInt()}x${size.height.toInt()})',
+        (tester) async {
+          await pumpOnboarding(
+            tester,
+            const AuthProviders(
+              googleClientId: 'abc.apps.googleusercontent.com',
+            ),
+            isWeb: true,
+            size: size,
+          );
+          expect(find.text('Crear cuenta'), findsOneWidget);
+          expect(find.text('Iniciar sesión'), findsOneWidget);
+          expect(find.text('Continuar con Google'), findsOneWidget);
+        },
+      );
+    }
+
+    testWidgets(
+      'en nativo no muestra la sección aunque /providers traiga google',
+      (tester) async {
+        await pumpOnboarding(
+          tester,
+          const AuthProviders(googleClientId: 'abc.apps.googleusercontent.com'),
+          isWeb: false,
+        );
+        expect(find.text('Continuar con Google'), findsNothing);
+        expect(find.text('Crear cuenta'), findsOneWidget);
+      },
+    );
+
+    testWidgets('sin google en /providers no muestra la sección', (
+      tester,
+    ) async {
+      await pumpOnboarding(tester, AuthProviders.passwordOnly, isWeb: true);
+      expect(find.text('Continuar con Google'), findsNothing);
+      expect(find.text('Crear cuenta'), findsOneWidget);
+    });
   });
 }
