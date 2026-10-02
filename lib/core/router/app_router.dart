@@ -5,6 +5,7 @@ import '../storage/secure_storage.dart';
 import '../theme/app_colors.dart';
 import '../../features/auth/presentation/auth_provider.dart';
 import '../../features/auth/presentation/complete_profile_screen.dart';
+import '../../features/auth/presentation/google_callback_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
@@ -60,10 +61,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isPublicRoute =
           loc == RouteNames.onboarding ||
           loc == RouteNames.login ||
-          loc == RouteNames.register;
+          loc == RouteNames.register ||
+          loc == RouteNames.googleCallback;
       if (!isAuth && !isPublicRoute) return RouteNames.onboarding;
       // Cuenta nueva por Google: una sola vez a completar el perfil.
-      if (isAuth && isPublicRoute) {
+      // El callback decide solo su destino: no se redirige mientras valida el token.
+      if (isAuth && isPublicRoute && loc != RouteNames.googleCallback) {
         return authNotifier.pendingProfileCompletion
             ? RouteNames.completeProfile
             : RouteNames.home;
@@ -81,6 +84,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const RegisterScreen(),
       ),
 
+      GoRoute(
+        path: RouteNames.googleCallback,
+        builder: (_, __) => const GoogleCallbackScreen(),
+      ),
       GoRoute(
         path: RouteNames.completeProfile,
         builder: (_, __) => const CompleteProfileScreen(),

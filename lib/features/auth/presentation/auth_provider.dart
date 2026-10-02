@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/auth/browser_session.dart';
+import '../../../core/auth/google_redirect_flow.dart';
 import '../../../core/auth/social_auth_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
@@ -38,6 +40,16 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
     ref.watch(secureStorageProvider),
   );
 });
+
+/// Sesión del navegador (web). `main` la crea antes de `runApp` para capturar el fragmento de la URL
+/// con el id_token antes de que el router lo reescriba; en tests se reemplaza por un fake.
+final browserSessionProvider = Provider<BrowserSession>(
+  (_) => createBrowserSession(),
+);
+
+final googleRedirectFlowProvider = Provider<GoogleRedirectFlow>(
+  (ref) => GoogleRedirectFlow(ref.watch(browserSessionProvider)),
+);
 
 final socialAuthServiceProvider = Provider<SocialAuthService>((ref) {
   final service = SocialAuthService();
@@ -154,6 +166,7 @@ class AuthNotifier extends ChangeNotifier {
     _pendingProfileCompletion = false;
     notifyListeners();
   }
+
   int get sessionEpoch => _sessionEpoch;
 
   AuthNotifier(this._repository, this._fcmHandler, this._social) {
@@ -212,7 +225,9 @@ class AuthNotifier extends ChangeNotifier {
         onIdToken: (t) => unawaited(signInWithGoogle(t)),
         onError:
             (_) => _update(
-              _state.withError('No se pudo iniciar con Google. Intenta de nuevo.'),
+              _state.withError(
+                'No se pudo iniciar con Google. Intenta de nuevo.',
+              ),
             ),
       );
       return true;
@@ -236,11 +251,14 @@ class AuthNotifier extends ChangeNotifier {
     }
   }
 
-  Future<void> signInWithGoogle(String idToken) async {
+  Future<void> signInWithGoogle(String idToken, {String? nonce}) async {
     if (_state.isAuthenticated || _state.isLoading) return;
     _update(_state.withLoading());
     try {
-      final response = await _repository.signInWithGoogle(idToken);
+      final response = await _repository.signInWithGoogle(
+        idToken,
+        nonce: nonce,
+      );
       _sessionEpoch++;
       _pendingProfileCompletion = response.newUser;
       _update(_state.withAuthenticated(response.email));

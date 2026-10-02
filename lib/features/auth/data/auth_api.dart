@@ -40,11 +40,12 @@ class AuthApi {
   }
 
   /// POST /authentication/google — canjea un ID token de Google por el JWT de SIDRU.
-  Future<SignInResponse> google(String idToken) async {
+  /// [nonce] (flujo web por redirección) lo compara el backend con el del token.
+  Future<SignInResponse> google(String idToken, {String? nonce}) async {
     try {
       final res = await _client.post(
         '/authentication/google',
-        data: {'idToken': idToken},
+        data: {'idToken': idToken, if (nonce != null) 'nonce': nonce},
       );
       return SignInResponse.fromJson(res.data as Map<String, dynamic>);
     } on DioException catch (e) {

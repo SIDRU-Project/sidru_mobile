@@ -32,8 +32,11 @@ class AuthRepository {
 
   /// Entra con un ID token de Google y persiste el JWT de SIDRU.
   /// `newUser` en la respuesta indica que la cuenta se acaba de crear.
-  Future<SignInResponse> signInWithGoogle(String idToken) async {
-    final response = await _api.google(idToken);
+  Future<SignInResponse> signInWithGoogle(
+    String idToken, {
+    String? nonce,
+  }) async {
+    final response = await _api.google(idToken, nonce: nonce);
     await _storage.saveToken(response.token);
     return response;
   }

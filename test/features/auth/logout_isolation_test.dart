@@ -26,14 +26,18 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<SignInResponse> signIn(String email, String password) async {
-    return SignInResponse(id: email.hashCode, email: email, token: 'jwt-$email');
+    return SignInResponse(
+      id: email.hashCode,
+      email: email,
+      token: 'jwt-$email',
+    );
   }
 
   @override
   Future<AuthProviders> providers() async => AuthProviders.passwordOnly;
 
   @override
-  Future<SignInResponse> signInWithGoogle(String idToken) =>
+  Future<SignInResponse> signInWithGoogle(String idToken, {String? nonce}) =>
       throw UnimplementedError();
 
   @override
@@ -162,10 +166,16 @@ void main() {
 
       expect(await container.read(userNotifierProvider.future), isNull);
       expect(await container.read(sessionListProvider.future), isEmpty);
-      expect(fakeUser.getProfileCalls, 1,
-          reason: 'tras logout no debe volver a llamarse a la API de perfil');
-      expect(fakeSessions.getMySessionsCalls, 1,
-          reason: 'tras logout no debe volver a llamarse a la API de sesiones');
+      expect(
+        fakeUser.getProfileCalls,
+        1,
+        reason: 'tras logout no debe volver a llamarse a la API de perfil',
+      );
+      expect(
+        fakeSessions.getMySessionsCalls,
+        1,
+        reason: 'tras logout no debe volver a llamarse a la API de sesiones',
+      );
 
       // --- signIn como B: no debe arrastrar nada de A ---
       fakeUser.current = profileB;
@@ -177,22 +187,34 @@ void main() {
     },
   );
 
-  test('logout() dos veces seguidas es idempotente: no repite el borrado ni el epoch', () async {
-    fakeUser.current = _profile(1, 'Ciudadano A');
-    fakeSessions.current = [_session(1)];
-    await container.read(authNotifierProvider).signIn('a@sidru.pe', 'x');
+  test(
+    'logout() dos veces seguidas es idempotente: no repite el borrado ni el epoch',
+    () async {
+      fakeUser.current = _profile(1, 'Ciudadano A');
+      fakeSessions.current = [_session(1)];
+      await container.read(authNotifierProvider).signIn('a@sidru.pe', 'x');
 
-    await container.read(authNotifierProvider).logout();
-    final logoutCallsTrasElPrimero = fakeAuth.logoutCalls;
-    final epochTrasElPrimero = container.read(authNotifierProvider).sessionEpoch;
+      await container.read(authNotifierProvider).logout();
+      final logoutCallsTrasElPrimero = fakeAuth.logoutCalls;
+      final epochTrasElPrimero =
+          container.read(authNotifierProvider).sessionEpoch;
 
-    await container.read(authNotifierProvider).logout();
+      await container.read(authNotifierProvider).logout();
 
-    expect(fakeAuth.logoutCalls, logoutCallsTrasElPrimero,
-        reason: 'un logout ya cerrado no debe volver a llamar a repository.logout()');
-    expect(container.read(authNotifierProvider).sessionEpoch, epochTrasElPrimero,
-        reason: 'un logout ya cerrado no debe incrementar sessionEpoch de nuevo');
-  });
+      expect(
+        fakeAuth.logoutCalls,
+        logoutCallsTrasElPrimero,
+        reason:
+            'un logout ya cerrado no debe volver a llamar a repository.logout()',
+      );
+      expect(
+        container.read(authNotifierProvider).sessionEpoch,
+        epochTrasElPrimero,
+        reason:
+            'un logout ya cerrado no debe incrementar sessionEpoch de nuevo',
+      );
+    },
+  );
 
   test('dos logout() concurrentes solo borran la sesión una vez', () async {
     fakeUser.current = _profile(1, 'Ciudadano A');
@@ -203,9 +225,17 @@ void main() {
 
     await Future.wait([auth.logout(), auth.logout()]);
 
-    expect(fakeAuth.logoutCalls, 1,
-        reason: 'dos logout() concurrentes no deben duplicar el borrado de sesión');
-    expect(auth.sessionEpoch, epochTrasElLogin + 1,
-        reason: 'dos logout() concurrentes solo deben incrementar el epoch una vez');
+    expect(
+      fakeAuth.logoutCalls,
+      1,
+      reason:
+          'dos logout() concurrentes no deben duplicar el borrado de sesión',
+    );
+    expect(
+      auth.sessionEpoch,
+      epochTrasElLogin + 1,
+      reason:
+          'dos logout() concurrentes solo deben incrementar el epoch una vez',
+    );
   });
 }

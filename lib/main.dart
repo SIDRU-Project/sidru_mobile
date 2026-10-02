@@ -4,7 +4,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'app.dart';
+import 'core/auth/browser_session.dart';
 import 'core/notifications/fcm_handler.dart';
+import 'features/auth/presentation/auth_provider.dart';
 
 Future<void> main() async {
   // Web: URLs sin '#' (/home en vez de /#/home). En móvil es un no-op.
@@ -25,9 +27,15 @@ Future<void> main() async {
   final fcmHandler = FcmHandler();
   await fcmHandler.initialize();
 
+  // Captura el fragmento de la URL (id_token de Google) antes de arrancar el router.
+  final browserSession = createBrowserSession();
+
   runApp(
     ProviderScope(
-      overrides: [fcmHandlerProvider.overrideWithValue(fcmHandler)],
+      overrides: [
+        fcmHandlerProvider.overrideWithValue(fcmHandler),
+        browserSessionProvider.overrideWithValue(browserSession),
+      ],
       child: const SidruApp(),
     ),
   );

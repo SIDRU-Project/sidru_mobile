@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../shared/widgets/outline_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -127,7 +128,7 @@ class OnboardingScreen extends ConsumerWidget {
                                   () => context.push(RouteNames.register),
                             ),
                             const SizedBox(height: AppSpacing.md),
-                            _OutlineButton(
+                            OutlineButton(
                               label: 'Iniciar sesión',
                               onTap: () => context.push(RouteNames.login),
                             ),
@@ -183,46 +184,6 @@ class _HeroTitle extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-// Botón secundario (superficie + borde)
-
-class _OutlineButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-  const _OutlineButton({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceElevated,
-          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-          border: Border.all(color: AppColors.borderMedium),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-            child: Center(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

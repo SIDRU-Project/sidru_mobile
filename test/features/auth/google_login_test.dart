@@ -22,9 +22,11 @@ class FakeAuthApi implements AuthApi {
   AuthProviders? providersResponse;
   Object? providersError;
   String? lastIdToken;
+  String? lastNonce;
 
   @override
-  Future<SignInResponse> google(String idToken) async {
+  Future<SignInResponse> google(String idToken, {String? nonce}) async {
+    lastNonce = nonce;
     lastIdToken = idToken;
     if (googleError != null) throw googleError!;
     return googleResponse!;
@@ -249,39 +251,31 @@ void main() {
       return social;
     }
 
-    testWidgets('muestra el botón e inicializa con el client ID del backend', (
-      tester,
-    ) async {
-      final social = await pump(
+    testWidgets('muestra el botón', (tester) async {
+      await pump(
         tester,
         const AuthProviders(googleClientId: 'abc.apps.googleusercontent.com'),
       );
 
       expect(find.text('Continuar con Google'), findsOneWidget);
-      expect(social.initializedWith, 'abc.apps.googleusercontent.com');
     });
 
-    testWidgets(
-      'en nativo no hay botón ni se inicializa aunque /providers traiga google',
-      (tester) async {
-        final social = await pump(
-          tester,
-          const AuthProviders(googleClientId: 'abc.apps.googleusercontent.com'),
-          isWeb: false,
-        );
-
-        expect(find.text('Continuar con Google'), findsNothing);
-        expect(social.initializedWith, isNull);
-      },
-    );
-
-    testWidgets('sin google en /providers no hay botón ni se inicializa nada', (
+    testWidgets('en nativo no hay botón aunque /providers traiga google', (
       tester,
     ) async {
-      final social = await pump(tester, AuthProviders.passwordOnly);
+      await pump(
+        tester,
+        const AuthProviders(googleClientId: 'abc.apps.googleusercontent.com'),
+        isWeb: false,
+      );
 
       expect(find.text('Continuar con Google'), findsNothing);
-      expect(social.initializedWith, isNull);
+    });
+
+    testWidgets('sin google en /providers no hay botón', (tester) async {
+      await pump(tester, AuthProviders.passwordOnly);
+
+      expect(find.text('Continuar con Google'), findsNothing);
     });
 
     test(

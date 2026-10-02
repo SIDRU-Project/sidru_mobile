@@ -4,6 +4,7 @@ class RouteNames {
   static const login = '/login';
   static const register = '/register';
   static const completeProfile = '/complete-profile';
+  static const googleCallback = '/auth/google/callback';
 
   // Shell principal
   static const home = '/home';
