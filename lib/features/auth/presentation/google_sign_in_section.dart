@@ -44,6 +44,11 @@ class GoogleSignInSection extends ConsumerWidget {
           const SizedBox(height: 16),
           OutlineButton(
             label: 'Continuar con Google',
+            // Tema claro oficial de Google; el resto de botones de la app no cambia.
+            background: const Color(0xFFFFFFFF),
+            borderColor: const Color(0xFF747775),
+            textColor: const Color(0xFF1F1F1F),
+            pressedColor: const Color(0xFFF2F2F2),
             leading: Image.asset(
               'assets/images/google_g.png',
               width: 20,

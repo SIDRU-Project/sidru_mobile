@@ -8,11 +8,23 @@ class OutlineButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final Widget? leading;
+
+  /// Colores propios (botón de Google, tema claro oficial). Si son null, el estilo oscuro de la app.
+  final Color? background;
+  final Color? borderColor;
+  final Color? textColor;
+
+  /// Gris sutil en hover/pressed.
+  final Color? pressedColor;
   const OutlineButton({
     super.key,
     required this.label,
     required this.onTap,
     this.leading,
+    this.background,
+    this.borderColor,
+    this.textColor,
+    this.pressedColor,
   });
 
   @override
@@ -22,14 +34,17 @@ class OutlineButton extends StatelessWidget {
       height: 52,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppColors.surfaceElevated,
+          color: background ?? AppColors.surfaceElevated,
           borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-          border: Border.all(color: AppColors.borderMedium),
+          border: Border.all(color: borderColor ?? AppColors.borderMedium),
         ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
+            hoverColor: pressedColor,
+            highlightColor: pressedColor,
+            splashColor: pressedColor,
             borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
             child: Center(
               child: Row(
@@ -40,10 +55,10 @@ class OutlineButton extends StatelessWidget {
                     child: Text(
                       label,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: textColor ?? AppColors.textPrimary,
                       ),
                     ),
                   ),
