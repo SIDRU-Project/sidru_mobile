@@ -12,6 +12,7 @@ import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/gradient_button.dart';
 import 'auth_provider.dart';
+import 'google_sign_in_section.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -203,6 +204,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             onPressed: _submit,
                             isLoading: auth.isLoading,
                           ),
+                          const GoogleSignInSection(),
                         ],
                       ),
                     ),

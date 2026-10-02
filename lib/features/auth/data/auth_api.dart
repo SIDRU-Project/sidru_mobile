@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/network_error_mapper.dart';
 import '../../user/data/models/user_profile.dart';
+import 'models/auth_providers.dart';
 import 'models/sign_in_request.dart';
 import 'models/sign_in_response.dart';
 import 'models/sign_up_request.dart';
@@ -21,6 +22,29 @@ class AuthApi {
       final res = await _client.post(
         '/authentication/sign-in',
         data: request.toJson(),
+      );
+      return SignInResponse.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw NetworkErrorMapper.map(e);
+    }
+  }
+
+  /// GET /authentication/providers — qué proveedores de login ofrece el backend.
+  Future<AuthProviders> providers() async {
+    try {
+      final res = await _client.get('/authentication/providers');
+      return AuthProviders.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw NetworkErrorMapper.map(e);
+    }
+  }
+
+  /// POST /authentication/google — canjea un ID token de Google por el JWT de SIDRU.
+  Future<SignInResponse> google(String idToken) async {
+    try {
+      final res = await _client.post(
+        '/authentication/google',
+        data: {'idToken': idToken},
       );
       return SignInResponse.fromJson(res.data as Map<String, dynamic>);
     } on DioException catch (e) {

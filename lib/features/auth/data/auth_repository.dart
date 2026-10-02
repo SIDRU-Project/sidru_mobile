@@ -2,6 +2,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../user/data/models/user_profile.dart';
 import 'auth_api.dart';
+import 'models/auth_providers.dart';
 import 'models/sign_in_request.dart';
 import 'models/sign_in_response.dart';
 import 'models/sign_up_request.dart';
@@ -21,6 +22,18 @@ class AuthRepository {
     final response = await _api.signIn(
       SignInRequest(email: email.trim(), password: password),
     );
+    await _storage.saveToken(response.token);
+    return response;
+  }
+
+  /// Proveedores de login que ofrece el backend. Si falla, quien llama decide el
+  /// respaldo (la UI deja solo correo y contraseña).
+  Future<AuthProviders> providers() => _api.providers();
+
+  /// Entra con un ID token de Google y persiste el JWT de SIDRU.
+  /// `newUser` en la respuesta indica que la cuenta se acaba de crear.
+  Future<SignInResponse> signInWithGoogle(String idToken) async {
+    final response = await _api.google(idToken);
     await _storage.saveToken(response.token);
     return response;
   }

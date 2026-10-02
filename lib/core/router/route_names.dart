@@ -3,6 +3,7 @@ class RouteNames {
   static const onboarding = '/onboarding';
   static const login = '/login';
   static const register = '/register';
+  static const completeProfile = '/complete-profile';
 
   // Shell principal
   static const home = '/home';

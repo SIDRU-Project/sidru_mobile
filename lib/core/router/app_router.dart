@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../storage/secure_storage.dart';
 import '../theme/app_colors.dart';
 import '../../features/auth/presentation/auth_provider.dart';
+import '../../features/auth/presentation/complete_profile_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
@@ -61,7 +62,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           loc == RouteNames.login ||
           loc == RouteNames.register;
       if (!isAuth && !isPublicRoute) return RouteNames.onboarding;
-      if (isAuth && isPublicRoute) return RouteNames.home;
+      // Cuenta nueva por Google: una sola vez a completar el perfil.
+      if (isAuth && isPublicRoute) {
+        return authNotifier.pendingProfileCompletion
+            ? RouteNames.completeProfile
+            : RouteNames.home;
+      }
       return null;
     },
     routes: [
@@ -73,6 +79,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.register,
         builder: (_, __) => const RegisterScreen(),
+      ),
+
+      GoRoute(
+        path: RouteNames.completeProfile,
+        builder: (_, __) => const CompleteProfileScreen(),
       ),
 
       // Tabs principales (con bottom navigation)

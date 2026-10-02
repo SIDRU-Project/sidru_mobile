@@ -10,6 +10,7 @@ import '../../../shared/widgets/gradient_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/loading_state.dart';
 import 'auth_provider.dart';
+import 'google_sign_in_section.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -160,6 +161,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             onPressed: _submit,
                             isLoading: auth.isLoading,
                           ),
+                          const GoogleSignInSection(),
                         ],
                       ),
                     ),

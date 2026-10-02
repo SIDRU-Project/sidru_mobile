@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/auth/social_auth_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/notifications/fcm_handler.dart';
 import '../../../core/router/app_router.dart';
 import '../data/auth_api.dart';
 import '../data/auth_repository.dart';
+import '../data/models/auth_providers.dart';
 
 // Providers de la cadena de dependencias
 
@@ -37,12 +39,31 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   );
 });
 
+final socialAuthServiceProvider = Provider<SocialAuthService>((ref) {
+  final service = SocialAuthService();
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+/// Proveedores de login que ofrece el backend. Si la consulta falla (sin red, 401 de un
+/// backend viejo), solo se muestran correo y contraseña.
+final authProvidersProvider = FutureProvider.autoDispose<AuthProviders>((
+  ref,
+) async {
+  try {
+    return await ref.read(authRepositoryProvider).providers();
+  } catch (_) {
+    return AuthProviders.passwordOnly;
+  }
+});
+
 /// Provider principal de autenticación.
 /// GoRouter lo usa como refreshListenable para disparar redirects.
 final authNotifierProvider = ChangeNotifierProvider<AuthNotifier>((ref) {
   return AuthNotifier(
     ref.watch(authRepositoryProvider),
     ref.watch(fcmHandlerProvider),
+    ref.watch(socialAuthServiceProvider),
   );
 });
 
@@ -118,13 +139,24 @@ class AuthNotifierState {
 class AuthNotifier extends ChangeNotifier {
   final AuthRepository _repository;
   final FcmHandler _fcmHandler;
+  final SocialAuthService _social;
   AuthNotifierState _state = const AuthNotifierState(isInitializing: true);
   int _sessionEpoch = 0;
+  bool _pendingProfileCompletion = false;
 
   AuthNotifierState get state => _state;
+
+  /// true tras crear la cuenta con Google: el router manda a /complete-profile una vez.
+  bool get pendingProfileCompletion => _pendingProfileCompletion;
+
+  void finishProfileCompletion() {
+    if (!_pendingProfileCompletion) return;
+    _pendingProfileCompletion = false;
+    notifyListeners();
+  }
   int get sessionEpoch => _sessionEpoch;
 
-  AuthNotifier(this._repository, this._fcmHandler) {
+  AuthNotifier(this._repository, this._fcmHandler, this._social) {
     _restoreSession();
   }
 
@@ -163,6 +195,54 @@ class AuthNotifier extends ChangeNotifier {
       unawaited(_fcmHandler.subscribeToUser(response.id));
     } on ApiException catch (e) {
       _update(_state.withError(_mapSignInError(e)));
+    } catch (_) {
+      _update(_state.withError('Error inesperado. Intenta de nuevo.'));
+    }
+  }
+
+  // Google
+
+  /// Prepara el SDK con el client ID del backend. Idempotente. En web, el botón oficial
+  /// entrega el token por el stream y llega a [signInWithGoogle].
+  Future<void> initGoogle(String clientId) async {
+    try {
+      await _social.init(
+        clientId,
+        onIdToken: (t) => unawaited(signInWithGoogle(t)),
+        onError:
+            (_) => _update(
+              _state.withError('No se pudo iniciar con Google. Intenta de nuevo.'),
+            ),
+      );
+    } catch (_) {
+      _update(
+        _state.withError('No se pudo iniciar con Google. Intenta de nuevo.'),
+      );
+    }
+  }
+
+  /// Solo nativo: abre el selector de cuentas de Google.
+  Future<void> startGoogleNative() async {
+    try {
+      await _social.authenticate();
+    } catch (_) {
+      _update(
+        _state.withError('No se pudo iniciar con Google. Intenta de nuevo.'),
+      );
+    }
+  }
+
+  Future<void> signInWithGoogle(String idToken) async {
+    if (_state.isAuthenticated || _state.isLoading) return;
+    _update(_state.withLoading());
+    try {
+      final response = await _repository.signInWithGoogle(idToken);
+      _sessionEpoch++;
+      _pendingProfileCompletion = response.newUser;
+      _update(_state.withAuthenticated(response.email));
+      unawaited(_fcmHandler.subscribeToUser(response.id));
+    } on ApiException catch (e) {
+      _update(_state.withError(_mapSocialError(e)));
     } catch (_) {
       _update(_state.withError('Error inesperado. Intenta de nuevo.'));
     }
@@ -233,7 +313,9 @@ class AuthNotifier extends ChangeNotifier {
     // FCM: desuscribe del topic del usuario antes de limpiar la sesión (best-effort).
     unawaited(_fcmHandler.unsubscribeCurrent());
     _sessionEpoch++;
+    _pendingProfileCompletion = false;
     _update(_state.cleared());
+    unawaited(_social.signOut());
     await _repository.logout();
   }
 
@@ -262,6 +344,18 @@ class AuthNotifier extends ChangeNotifier {
         'Sin conexión con el servidor. Verifica tu internet.',
       ApiErrorType.badRequest => 'Correo o contraseña inválidos.',
       _ => e.message,
+    };
+  }
+
+  String _mapSocialError(ApiException e) {
+    return switch (e.type) {
+      ApiErrorType.unauthorized =>
+        'Google no pudo verificar tu identidad. Intenta de nuevo.',
+      ApiErrorType.conflict =>
+        'No se puede entrar con Google con esta cuenta. Usa tu correo y contraseña.',
+      ApiErrorType.networkError =>
+        'Sin conexión con el servidor. Verifica tu internet.',
+      _ => 'No se pudo iniciar con Google. Intenta de nuevo.',
     };
   }
 

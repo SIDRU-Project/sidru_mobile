@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sidru_mobile/core/notifications/fcm_handler.dart';
 import 'package:sidru_mobile/features/auth/data/auth_repository.dart';
+import 'package:sidru_mobile/features/auth/data/models/auth_providers.dart';
 import 'package:sidru_mobile/features/auth/data/models/sign_in_response.dart';
 import 'package:sidru_mobile/features/auth/data/models/sign_up_response.dart';
 import 'package:sidru_mobile/features/auth/presentation/auth_provider.dart';
@@ -27,6 +28,13 @@ class FakeAuthRepository implements AuthRepository {
   Future<SignInResponse> signIn(String email, String password) async {
     return SignInResponse(id: email.hashCode, email: email, token: 'jwt-$email');
   }
+
+  @override
+  Future<AuthProviders> providers() async => AuthProviders.passwordOnly;
+
+  @override
+  Future<SignInResponse> signInWithGoogle(String idToken) =>
+      throw UnimplementedError();
 
   @override
   Future<SignUpResponse> signUp({
