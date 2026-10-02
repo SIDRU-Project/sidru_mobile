@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/google_button.dart';
@@ -8,8 +9,15 @@ import 'auth_provider.dart';
 /// Separador "o" + botón de Google. Solo aparece si el backend declara Google en
 /// GET /authentication/providers; si la consulta falla o no hay client ID, no ocupa nada
 /// y la pantalla queda solo con correo y contraseña.
+///
+/// Solo web: en nativo Google exige un client ID Android con el SHA-1 del keystore (Fase 5,
+/// sin hacer), así que no se muestra nada ni se inicializa el SDK. El código nativo
+/// (botón stub, serverClientId) queda listo para esa fase.
 class GoogleSignInSection extends ConsumerStatefulWidget {
-  const GoogleSignInSection({super.key});
+  const GoogleSignInSection({super.key, @visibleForTesting bool? isWeb})
+    : isWeb = isWeb ?? kIsWeb;
+
+  final bool isWeb;
 
   @override
   ConsumerState<GoogleSignInSection> createState() =>
@@ -22,6 +30,7 @@ class _GoogleSignInSectionState extends ConsumerState<GoogleSignInSection> {
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.isWeb) return const SizedBox.shrink();
     final providers = ref.watch(authProvidersProvider).valueOrNull;
     if (providers == null || !providers.hasGoogle) {
       return const SizedBox.shrink();
@@ -54,8 +63,7 @@ class _GoogleSignInSectionState extends ConsumerState<GoogleSignInSection> {
           ),
           const SizedBox(height: 16),
           buildGoogleButton(
-            onPressed:
-                () => ref.read(authNotifierProvider).startGoogleNative(),
+            onPressed: () => ref.read(authNotifierProvider).startGoogleNative(),
           ),
         ],
       ),

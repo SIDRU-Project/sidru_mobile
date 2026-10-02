@@ -143,7 +143,9 @@ void main() {
       social = FakeSocial();
       container = ProviderContainer(
         overrides: [
-          authRepositoryProvider.overrideWithValue(AuthRepository(api, storage)),
+          authRepositoryProvider.overrideWithValue(
+            AuthRepository(api, storage),
+          ),
           fcmHandlerProvider.overrideWithValue(FcmHandler()),
           socialAuthServiceProvider.overrideWithValue(social),
         ],
@@ -152,23 +154,26 @@ void main() {
 
     tearDown(() => container.dispose());
 
-    test('cuenta nueva: autentica y marca el paso de completar perfil una vez', () async {
-      api.googleResponse = const SignInResponse(
-        id: 1,
-        email: 'nuevo@gmail.com',
-        token: 'jwt',
-        newUser: true,
-      );
-      final auth = container.read(authNotifierProvider);
-      await Future<void>.delayed(Duration.zero); // _restoreSession sin token
+    test(
+      'cuenta nueva: autentica y marca el paso de completar perfil una vez',
+      () async {
+        api.googleResponse = const SignInResponse(
+          id: 1,
+          email: 'nuevo@gmail.com',
+          token: 'jwt',
+          newUser: true,
+        );
+        final auth = container.read(authNotifierProvider);
+        await Future<void>.delayed(Duration.zero); // _restoreSession sin token
 
-      await auth.signInWithGoogle('tok');
+        await auth.signInWithGoogle('tok');
 
-      expect(auth.state.isAuthenticated, isTrue);
-      expect(auth.pendingProfileCompletion, isTrue);
-      auth.finishProfileCompletion();
-      expect(auth.pendingProfileCompletion, isFalse);
-    });
+        expect(auth.state.isAuthenticated, isTrue);
+        expect(auth.pendingProfileCompletion, isTrue);
+        auth.finishProfileCompletion();
+        expect(auth.pendingProfileCompletion, isFalse);
+      },
+    );
 
     test('cuenta existente: autentica sin pedir completar perfil', () async {
       api.googleResponse = const SignInResponse(
@@ -217,7 +222,11 @@ void main() {
   });
 
   group('GoogleSignInSection', () {
-    Future<FakeSocial> pump(WidgetTester tester, AuthProviders providers) async {
+    Future<FakeSocial> pump(
+      WidgetTester tester,
+      AuthProviders providers, {
+      bool isWeb = true,
+    }) async {
       final social = FakeSocial();
       await tester.pumpWidget(
         ProviderScope(
@@ -229,8 +238,8 @@ void main() {
             fcmHandlerProvider.overrideWithValue(FcmHandler()),
             socialAuthServiceProvider.overrideWithValue(social),
           ],
-          child: const MaterialApp(
-            home: Scaffold(body: GoogleSignInSection()),
+          child: MaterialApp(
+            home: Scaffold(body: GoogleSignInSection(isWeb: isWeb)),
           ),
         ),
       );
@@ -250,6 +259,20 @@ void main() {
       expect(social.initializedWith, 'abc.apps.googleusercontent.com');
     });
 
+    testWidgets(
+      'en nativo no hay botón ni se inicializa aunque /providers traiga google',
+      (tester) async {
+        final social = await pump(
+          tester,
+          const AuthProviders(googleClientId: 'abc.apps.googleusercontent.com'),
+          isWeb: false,
+        );
+
+        expect(find.text('Continuar con Google'), findsNothing);
+        expect(social.initializedWith, isNull);
+      },
+    );
+
     testWidgets('sin google en /providers no hay botón ni se inicializa nada', (
       tester,
     ) async {
@@ -259,21 +282,24 @@ void main() {
       expect(social.initializedWith, isNull);
     });
 
-    test('si /providers falla el provider cae a solo correo y contraseña', () async {
-      final api = FakeAuthApi()..providersError = Exception('sin red');
-      final container = ProviderContainer(
-        overrides: [
-          authRepositoryProvider.overrideWithValue(
-            AuthRepository(api, FakeStorage()),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'si /providers falla el provider cae a solo correo y contraseña',
+      () async {
+        final api = FakeAuthApi()..providersError = Exception('sin red');
+        final container = ProviderContainer(
+          overrides: [
+            authRepositoryProvider.overrideWithValue(
+              AuthRepository(api, FakeStorage()),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final result = await container.read(authProvidersProvider.future);
+        final result = await container.read(authProvidersProvider.future);
 
-      expect(result.hasGoogle, isFalse);
-      expect(result.password, isTrue);
-    });
+        expect(result.hasGoogle, isFalse);
+        expect(result.password, isTrue);
+      },
+    );
   });
 }
