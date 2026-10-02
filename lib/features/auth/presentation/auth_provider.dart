@@ -204,7 +204,8 @@ class AuthNotifier extends ChangeNotifier {
 
   /// Prepara el SDK con el client ID del backend. Idempotente. En web, el botón oficial
   /// entrega el token por el stream y llega a [signInWithGoogle].
-  Future<void> initGoogle(String clientId) async {
+  /// Devuelve true cuando el SDK quedó listo (solo entonces se puede dibujar el botón web).
+  Future<bool> initGoogle(String clientId) async {
     try {
       await _social.init(
         clientId,
@@ -214,10 +215,13 @@ class AuthNotifier extends ChangeNotifier {
               _state.withError('No se pudo iniciar con Google. Intenta de nuevo.'),
             ),
       );
-    } catch (_) {
+      return true;
+    } catch (e, st) {
+      debugPrint('initGoogle falló: $e\n$st');
       _update(
         _state.withError('No se pudo iniciar con Google. Intenta de nuevo.'),
       );
+      return false;
     }
   }
 

@@ -18,6 +18,7 @@ class GoogleSignInSection extends ConsumerStatefulWidget {
 
 class _GoogleSignInSectionState extends ConsumerState<GoogleSignInSection> {
   String? _initializedFor;
+  bool _ready = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +29,14 @@ class _GoogleSignInSectionState extends ConsumerState<GoogleSignInSection> {
     final clientId = providers.googleClientId!;
     if (_initializedFor != clientId) {
       _initializedFor = clientId;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          ref.read(authNotifierProvider).initGoogle(clientId);
-        }
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        final ok = await ref.read(authNotifierProvider).initGoogle(clientId);
+        if (mounted) setState(() => _ready = ok);
       });
     }
+    // El botón web exige el SDK ya inicializado: hasta entonces no se dibuja nada.
+    if (!_ready) return const SizedBox.shrink();
 
     return Padding(
       padding: const EdgeInsets.only(top: 20),
