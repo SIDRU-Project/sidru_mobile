@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +19,7 @@ class QrScannerScreen extends ConsumerStatefulWidget {
 class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
   final MobileScannerController _controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
+    facing: CameraFacing.back,
   );
 
   bool _processing = false;
@@ -102,10 +104,15 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
                         ),
                       ),
                       const Spacer(),
-                      _CircleButton(
-                        icon: Icons.flashlight_on_outlined,
-                        onTap: () => _controller.toggleTorch(),
-                      ),
+                      // La linterna no existe en la mayoría de navegadores: se
+                      // reserva el espacio para mantener el título centrado.
+                      if (kIsWeb)
+                        const SizedBox(width: 40, height: 40)
+                      else
+                        _CircleButton(
+                          icon: Icons.flashlight_on_outlined,
+                          onTap: () => _controller.toggleTorch(),
+                        ),
                     ],
                   ),
                 ),

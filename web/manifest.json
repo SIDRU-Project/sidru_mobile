@@ -1,12 +1,14 @@
 {
-    "name": "sidru_mobile",
-    "short_name": "sidru_mobile",
-    "start_url": ".",
+    "name": "SIDRU",
+    "short_name": "SIDRU",
+    "description": "Recicla chapas plásticas y gana puntos con SIDRU.",
+    "lang": "es",
+    "start_url": "/",
+    "scope": "/",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
     "orientation": "portrait-primary",
+    "background_color": "#0A0E1A",
+    "theme_color": "#0A0E1A",
     "prefer_related_applications": false,
     "icons": [
         {

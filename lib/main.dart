@@ -9,7 +9,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Cargar variables de entorno desde .env
-  await dotenv.load(fileName: '.env');
+  // En web el .env es opcional: la API se resuelve por Uri.base.origin (ver Env).
+  await dotenv.load(fileName: '.env', isOptional: true);
 
   // Inicializar datos de localización para formateo de fechas en español.
   // Sin esto, DateFormat(..., 'es') lanza LocaleDataException en runtime.

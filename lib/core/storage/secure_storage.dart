@@ -11,6 +11,7 @@ class SecureStorage {
     : _storage = const FlutterSecureStorage(
         aOptions: AndroidOptions(encryptedSharedPreferences: true),
         iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+        webOptions: WebOptions(dbName: 'sidru', publicKey: 'sidru'),
       );
 
   Future<void> saveToken(String token) =>
