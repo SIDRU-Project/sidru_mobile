@@ -135,7 +135,7 @@ class OnboardingScreen extends ConsumerWidget {
                             // Tras entrar, el router (redirect por sesión) manda a /complete-profile o
                             // /home igual que desde /login: no depende de la ruta actual.
                             GoogleSignInSection(isWeb: googleIsWeb),
-                            const SizedBox(height: AppSpacing.lg),
+                            const SizedBox(height: AppSpacing.xxl),
                           ],
                         ),
                       ),
