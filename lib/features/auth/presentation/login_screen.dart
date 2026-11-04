@@ -10,6 +10,7 @@ import '../../../shared/widgets/gradient_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/loading_state.dart';
 import 'auth_provider.dart';
+import 'google_sign_in_section.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -54,7 +55,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // ── Auras de fondo ────────────────────────────────────────────────
+          // Auras de fondo
           Positioned(
             left: -120,
             top: -150,
@@ -72,7 +73,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
 
-          // ── Contenido ─────────────────────────────────────────────────────
+          // Contenido
           SafeArea(
             child: Form(
               key: _formKey,
@@ -160,12 +161,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             onPressed: _submit,
                             isLoading: auth.isLoading,
                           ),
+                          const GoogleSignInSection(),
                         ],
                       ),
                     ),
                   ),
 
-                  // ── Footer ────────────────────────────────────────────────
+                  // Footer
                   Padding(
                     padding: const EdgeInsets.only(bottom: 32),
                     child: Row(
@@ -210,31 +212,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-// ── Widgets privados ──────────────────────────────────────────────────────────
+// Widgets privados
 
 class _SidruBrand extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Ícono circular con gradiente
-        Container(
-          width: 44,
-          height: 44,
-          decoration: const BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            shape: BoxShape.circle,
-          ),
-          child: const Center(
-            child: Text(
-              'S',
-              style: TextStyle(
-                color: Color(0xFF0A0E1A),
-                fontWeight: FontWeight.w800,
-                fontSize: 20,
-              ),
-            ),
-          ),
+        // Logo SIDRU
+        Image.asset(
+          'assets/images/logo_mark.png',
+          width: 48,
+          height: 48,
+          filterQuality: FilterQuality.high,
         ),
         const SizedBox(width: 10),
         Column(

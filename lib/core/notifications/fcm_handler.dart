@@ -39,6 +39,11 @@ class FcmHandler {
 
   /// Inicializa FCM: Firebase, handler de background, permisos y listeners. Nunca lanza.
   Future<void> initialize() async {
+    // Web: sin push por ahora (no se carga Firebase en el navegador).
+    if (kIsWeb) {
+      _available = false;
+      return;
+    }
     try {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,

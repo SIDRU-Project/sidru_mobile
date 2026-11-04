@@ -76,7 +76,7 @@ class SidruBottomNav extends StatelessWidget {
   }
 }
 
-// ── Ítem regular ──────────────────────────────────────────────────────────────
+// Ítem regular
 
 class _NavItem extends StatelessWidget {
   final IconData icon;
@@ -123,7 +123,7 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-// ── Botón central Escanear ────────────────────────────────────────────────────
+// Botón central Escanear
 
 class _ScanButton extends StatelessWidget {
   final VoidCallback onTap;

@@ -27,7 +27,7 @@ class LastSessionCard extends StatelessWidget {
   }
 }
 
-// ── Empty state ───────────────────────────────────────────────────────────────
+// Empty state
 // Estilo del prototipo: card glass con texto centrado simple
 
 class _EmptySessionCard extends StatelessWidget {
@@ -56,7 +56,7 @@ class _EmptySessionCard extends StatelessWidget {
   }
 }
 
-// ── Preview de sesión ─────────────────────────────────────────────────────────
+// Preview de sesión
 // Estilo del prototipo: id · bin, peso grande + pts, fecha, StatusChip, chevron
 
 class _SessionPreview extends StatelessWidget {

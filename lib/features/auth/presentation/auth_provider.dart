@@ -2,18 +2,32 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/auth/browser_session.dart';
+import '../../../core/auth/google_redirect_flow.dart';
+import '../../../core/auth/social_auth_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/notifications/fcm_handler.dart';
 import '../../../core/router/app_router.dart';
 import '../data/auth_api.dart';
 import '../data/auth_repository.dart';
+import '../data/models/auth_providers.dart';
 
-// ── Providers de la cadena de dependencias ────────────────────────────────────
+// Providers de la cadena de dependencias
 
-final apiClientProvider = Provider<ApiClient>((ref) {
+// Tipo anotado explícitamente: el callback onUnauthorized referencia
+// authNotifierProvider (api → repository → notifier → api), lo que crearía un
+// ciclo de INFERENCIA de tipos. Anotar el tipo lo saca del grafo de inferencia
+// y rompe el ciclo; en runtime no hay ciclo porque el callback es diferido.
+final Provider<ApiClient> apiClientProvider = Provider<ApiClient>((ref) {
   final storage = ref.read(secureStorageProvider);
-  return ApiClient(storage);
+  // El callback es diferido (solo se invoca cuando llega un 401): para entonces
+  // authNotifierProvider ya está construido, así que el ref.read no genera ciclo.
+  return ApiClient(
+    storage,
+    onUnauthorized:
+        () => ref.read(authNotifierProvider.notifier).handleSessionExpired(),
+  );
 });
 
 final authApiProvider = Provider<AuthApi>((ref) {
@@ -27,16 +41,45 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   );
 });
 
+/// Sesión del navegador (web). `main` la crea antes de `runApp` para capturar el fragmento de la URL
+/// con el id_token antes de que el router lo reescriba; en tests se reemplaza por un fake.
+final browserSessionProvider = Provider<BrowserSession>(
+  (_) => createBrowserSession(),
+);
+
+final googleRedirectFlowProvider = Provider<GoogleRedirectFlow>(
+  (ref) => GoogleRedirectFlow(ref.watch(browserSessionProvider)),
+);
+
+final socialAuthServiceProvider = Provider<SocialAuthService>((ref) {
+  final service = SocialAuthService();
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+/// Proveedores de login que ofrece el backend. Si la consulta falla (sin red, 401 de un
+/// backend viejo), solo se muestran correo y contraseña.
+final authProvidersProvider = FutureProvider.autoDispose<AuthProviders>((
+  ref,
+) async {
+  try {
+    return await ref.read(authRepositoryProvider).providers();
+  } catch (_) {
+    return AuthProviders.passwordOnly;
+  }
+});
+
 /// Provider principal de autenticación.
 /// GoRouter lo usa como refreshListenable para disparar redirects.
 final authNotifierProvider = ChangeNotifierProvider<AuthNotifier>((ref) {
   return AuthNotifier(
     ref.watch(authRepositoryProvider),
     ref.watch(fcmHandlerProvider),
+    ref.watch(socialAuthServiceProvider),
   );
 });
 
-// ── Estado de autenticación ────────────────────────────────────────────────────
+// Estado de autenticación
 
 class AuthNotifierState {
   final bool isAuthenticated;
@@ -90,7 +133,7 @@ class AuthNotifierState {
   );
 }
 
-// ── Notifier ──────────────────────────────────────────────────────────────────
+// Notifier
 
 /// Gestiona el ciclo de vida de autenticación.
 /// Extiende ChangeNotifier para que GoRouter lo use como refreshListenable.
@@ -100,14 +143,33 @@ class AuthNotifierState {
 ///   signIn()  → POST /authentication/sign-in → guarda JWT → isAuthenticated = true
 ///   signUp()  → POST /authentication/sign-up → devuelve bool (UI navega a login)
 ///   logout()  → borra JWT → isAuthenticated = false
+///
+/// Cada vez que una sesión empieza o termina (signIn/restauración exitosos, logout,
+/// expiración) se incrementa [sessionEpoch]. Los providers por-usuario lo observan junto
+/// a isAuthenticated para reconstruirse en cada cambio de sesión, incluso si isAuthenticated
+/// no cambia entre dos sesiones consecutivas.
 class AuthNotifier extends ChangeNotifier {
   final AuthRepository _repository;
   final FcmHandler _fcmHandler;
+  final SocialAuthService _social;
   AuthNotifierState _state = const AuthNotifierState(isInitializing: true);
+  int _sessionEpoch = 0;
+  bool _pendingProfileCompletion = false;
 
   AuthNotifierState get state => _state;
 
-  AuthNotifier(this._repository, this._fcmHandler) {
+  /// true tras crear la cuenta con Google: el router manda a /complete-profile una vez.
+  bool get pendingProfileCompletion => _pendingProfileCompletion;
+
+  void finishProfileCompletion() {
+    if (!_pendingProfileCompletion) return;
+    _pendingProfileCompletion = false;
+    notifyListeners();
+  }
+
+  int get sessionEpoch => _sessionEpoch;
+
+  AuthNotifier(this._repository, this._fcmHandler, this._social) {
     _restoreSession();
   }
 
@@ -116,12 +178,13 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Restaurar sesión al arrancar ──────────────────────────────────────────
+  // Restaurar sesión al arrancar
 
   Future<void> _restoreSession() async {
     try {
       final profile = await _repository.tryRestoreSession();
       if (profile != null) {
+        _sessionEpoch++;
         _update(_state.withAuthenticated(profile.fullName));
         // FCM: suscribe al ciudadano a su topic user-{userId} (best-effort).
         unawaited(_fcmHandler.subscribeToUser(profile.userId));
@@ -133,12 +196,13 @@ class AuthNotifier extends ChangeNotifier {
     }
   }
 
-  // ── Sign In ───────────────────────────────────────────────────────────────
+  // Sign In
 
   Future<void> signIn(String email, String password) async {
     _update(_state.withLoading());
     try {
       final response = await _repository.signIn(email, password);
+      _sessionEpoch++;
       _update(_state.withAuthenticated(response.email));
       // FCM: suscribe al ciudadano a su topic user-{userId} (best-effort).
       unawaited(_fcmHandler.subscribeToUser(response.id));
@@ -149,7 +213,64 @@ class AuthNotifier extends ChangeNotifier {
     }
   }
 
-  // ── Sign Up ───────────────────────────────────────────────────────────────
+  // Google
+
+  /// Prepara el SDK con el client ID del backend. Idempotente. En web, el botón oficial
+  /// entrega el token por el stream y llega a [signInWithGoogle].
+  /// Devuelve true cuando el SDK quedó listo (solo entonces se puede dibujar el botón web).
+  Future<bool> initGoogle(String clientId) async {
+    try {
+      await _social.init(
+        clientId,
+        onIdToken: (t) => unawaited(signInWithGoogle(t)),
+        onError:
+            (_) => _update(
+              _state.withError(
+                'No se pudo iniciar con Google. Intenta de nuevo.',
+              ),
+            ),
+      );
+      return true;
+    } catch (e, st) {
+      debugPrint('initGoogle falló: $e\n$st');
+      _update(
+        _state.withError('No se pudo iniciar con Google. Intenta de nuevo.'),
+      );
+      return false;
+    }
+  }
+
+  /// Solo nativo: abre el selector de cuentas de Google.
+  Future<void> startGoogleNative() async {
+    try {
+      await _social.authenticate();
+    } catch (_) {
+      _update(
+        _state.withError('No se pudo iniciar con Google. Intenta de nuevo.'),
+      );
+    }
+  }
+
+  Future<void> signInWithGoogle(String idToken, {String? nonce}) async {
+    if (_state.isAuthenticated || _state.isLoading) return;
+    _update(_state.withLoading());
+    try {
+      final response = await _repository.signInWithGoogle(
+        idToken,
+        nonce: nonce,
+      );
+      _sessionEpoch++;
+      _pendingProfileCompletion = response.newUser;
+      _update(_state.withAuthenticated(response.email));
+      unawaited(_fcmHandler.subscribeToUser(response.id));
+    } on ApiException catch (e) {
+      _update(_state.withError(_mapSocialError(e)));
+    } catch (_) {
+      _update(_state.withError('Error inesperado. Intenta de nuevo.'));
+    }
+  }
+
+  // Sign Up
 
   /// Retorna true si el registro fue exitoso.
   /// La UI es responsable de navegar a Login tras true.
@@ -180,16 +301,47 @@ class AuthNotifier extends ChangeNotifier {
     }
   }
 
-  // ── Logout ────────────────────────────────────────────────────────────────
+  // Sesión expirada (401 en request autenticado)
 
-  Future<void> logout() async {
-    // FCM: desuscribe del topic del usuario antes de limpiar la sesión (best-effort).
+  /// Llamado por el [JwtInterceptor] cuando un request autenticado recibe 401
+  /// (el token ya fue borrado por el interceptor). Refleja la expiración en el
+  /// estado para que el router redirija y el usuario vea el motivo al volver a
+  /// login. Ignora los 401 de sign-in/sign-up (aún no autenticado): esos los
+  /// maneja cada flujo con su propio banner, sin pisarlos aquí.
+  Future<void> handleSessionExpired() async {
+    // La guarda + el incremento de epoch + _update van síncronos, antes del primer await:
+    // cierran la ventana de "autenticado" de inmediato, así que dos 401 en cadena (o un
+    // logout concurrente) no pueden pasar ambos la guarda y duplicar el borrado/epoch.
+    if (!_state.isAuthenticated) return;
     unawaited(_fcmHandler.unsubscribeCurrent());
+    _sessionEpoch++;
+    _update(
+      const AuthNotifierState(
+        errorMessage: 'Tu sesión expiró. Inicia sesión de nuevo.',
+      ),
+    );
+    // El interceptor ya borró el JWT; falta el resto del caché por-usuario (wallet, etc.).
     await _repository.logout();
-    _update(_state.cleared());
   }
 
-  // ── Utilidades ───────────────────────────────────────────────────────────
+  // Logout
+
+  Future<void> logout() async {
+    // Idempotente: la guarda + el incremento de epoch + _update van síncronos, antes del
+    // primer await, para cerrar la ventana de inmediato. Si no, dos logout() concurrentes
+    // (o un 401 en cadena junto a un logout manual) pasarían ambos la guarda y producirían
+    // dos borrados y dos epochs.
+    if (!_state.isAuthenticated) return;
+    // FCM: desuscribe del topic del usuario antes de limpiar la sesión (best-effort).
+    unawaited(_fcmHandler.unsubscribeCurrent());
+    _sessionEpoch++;
+    _pendingProfileCompletion = false;
+    _update(_state.cleared());
+    unawaited(_social.signOut());
+    await _repository.logout();
+  }
+
+  // Utilidades
 
   void clearError() {
     if (_state.errorMessage != null) {
@@ -204,7 +356,7 @@ class AuthNotifier extends ChangeNotifier {
     }
   }
 
-  // ── Mapeo de errores a mensajes de UI ────────────────────────────────────
+  // Mapeo de errores a mensajes de UI
 
   String _mapSignInError(ApiException e) {
     return switch (e.type) {
@@ -214,6 +366,18 @@ class AuthNotifier extends ChangeNotifier {
         'Sin conexión con el servidor. Verifica tu internet.',
       ApiErrorType.badRequest => 'Correo o contraseña inválidos.',
       _ => e.message,
+    };
+  }
+
+  String _mapSocialError(ApiException e) {
+    return switch (e.type) {
+      ApiErrorType.unauthorized =>
+        'Google no pudo verificar tu identidad. Intenta de nuevo.',
+      ApiErrorType.conflict =>
+        'No se puede entrar con Google con esta cuenta. Usa tu correo y contraseña.',
+      ApiErrorType.networkError =>
+        'Sin conexión con el servidor. Verifica tu internet.',
+      _ => 'No se pudo iniciar con Google. Intenta de nuevo.',
     };
   }
 

@@ -55,6 +55,18 @@ class NetworkErrorMapper {
           statusCode: code,
           type: ApiErrorType.conflict,
         );
+      case 422:
+        return ApiException(
+          message: msg ?? 'No se pudo procesar la solicitud.',
+          statusCode: code,
+          type: ApiErrorType.unprocessableEntity,
+        );
+      case 503:
+        return ApiException(
+          message: msg ?? 'Funcionalidad temporalmente deshabilitada.',
+          statusCode: code,
+          type: ApiErrorType.serviceUnavailable,
+        );
       default:
         return ApiException(
           message: msg ?? 'Error del servidor. Intenta de nuevo.',

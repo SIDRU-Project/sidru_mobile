@@ -3,31 +3,55 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/gradient_button.dart';
+import '../../data/models/wallet_transaction.dart';
 import '../../utils/eth_address_validator.dart';
 import '../wallet_provider.dart';
 
-/// Bottom sheet para retirar el saldo completo de CTC a la wallet del ciudadano.
+/// Modo de retiro (design.md §8). Los textos son literales de la spec.
+enum WithdrawMode {
+  ctc('CTC', 'CTC — para MetaMask u otra wallet no custodial'),
+  usdc('USDC', 'USDC — si vas a depositar en Lemon o un exchange');
+
+  final String apiValue;
+  final String label;
+  const WithdrawMode(this.apiValue, this.label);
+}
+
+/// Bottom sheet para retirar puntos a CTC o USDC (spec sidru-mainnet).
 ///
-/// - Valida el FORMATO EIP-55 client-side (no llama al backend si es inválido).
-/// - El backend revalida el checksum y responde los errores de negocio
-///   (sin saldo, retiro en curso, dirección inválida).
-/// - Indica explícitamente que se retira el SALDO COMPLETO (RN-BC-05).
+/// - Valida el FORMATO + checksum EIP-55 client-side (no llama al backend si es
+///   inválido) y los puntos (mínimo, máximo = saldo disponible).
+/// - El backend revalida todo y responde los errores de negocio.
+/// - Por defecto propone retirar el saldo completo; el ciudadano puede retirar
+///   una parte (US-MN-01, "Retiro parcial").
 class WithdrawSheet extends ConsumerStatefulWidget {
-  /// Saldo CTC mostrado (informativo) para el texto del sheet.
-  final String balanceCtc;
+  /// Saldo de puntos disponible (por defecto, el monto propuesto).
+  final int pointsBalance;
 
-  const WithdrawSheet({super.key, required this.balanceCtc});
+  /// Mínimo de puntos permitido por retiro (design.md §9).
+  final int minWithdrawalPoints;
 
-  /// Abre el sheet y devuelve `true` si el retiro se inició/completó con éxito.
-  static Future<bool?> show(
+  const WithdrawSheet({
+    super.key,
+    required this.pointsBalance,
+    required this.minWithdrawalPoints,
+  });
+
+  /// Abre el sheet y devuelve el [WalletTransaction] del retiro si se inició
+  /// con éxito (EN_PROCESO o ya resuelto), o `null` si se canceló.
+  static Future<WalletTransaction?> show(
     BuildContext context, {
-    required String balanceCtc,
+    required int pointsBalance,
+    required int minWithdrawalPoints,
   }) {
-    return showModalBottomSheet<bool>(
+    return showModalBottomSheet<WalletTransaction>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => WithdrawSheet(balanceCtc: balanceCtc),
+      builder: (_) => WithdrawSheet(
+        pointsBalance: pointsBalance,
+        minWithdrawalPoints: minWithdrawalPoints,
+      ),
     );
   }
 
@@ -36,41 +60,82 @@ class WithdrawSheet extends ConsumerStatefulWidget {
 }
 
 class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
-  final _controller = TextEditingController();
-  String? _inlineError;
+  late final TextEditingController _addressController;
+  late final TextEditingController _pointsController;
+  String? _addressError;
+  String? _pointsError;
+  WithdrawMode _mode = WithdrawMode.ctc;
   bool _submitting = false;
 
   @override
+  void initState() {
+    super.initState();
+    _addressController = TextEditingController();
+    // Por defecto, todo el saldo disponible (el ciudadano puede reducirlo).
+    _pointsController = TextEditingController(
+      text: widget.pointsBalance.toString(),
+    );
+  }
+
+  @override
   void dispose() {
-    _controller.dispose();
+    _addressController.dispose();
+    _pointsController.dispose();
     super.dispose();
   }
 
+  /// `null` si los puntos son válidos; el mensaje inline en caso contrario.
+  String? _validatePoints(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return 'Ingresa cuántos puntos quieres retirar.';
+    final points = int.tryParse(trimmed);
+    if (points == null || points <= 0) {
+      return 'Ingresa un número de puntos válido.';
+    }
+    if (points < widget.minWithdrawalPoints) {
+      return 'El mínimo de retiro es ${widget.minWithdrawalPoints} puntos.';
+    }
+    if (points > widget.pointsBalance) {
+      return 'No puedes retirar más de tu saldo disponible '
+          '(${widget.pointsBalance} puntos).';
+    }
+    return null;
+  }
+
   Future<void> _submit() async {
-    final address = _controller.text.trim();
-    final formatError = EthAddressValidator.validate(address);
-    if (formatError != null) {
-      setState(() => _inlineError = formatError);
+    final address = _addressController.text.trim();
+    final addressError = EthAddressValidator.validate(address);
+    final pointsError = _validatePoints(_pointsController.text);
+
+    if (addressError != null || pointsError != null) {
+      setState(() {
+        _addressError = addressError;
+        _pointsError = pointsError;
+      });
       return;
     }
 
     setState(() {
-      _inlineError = null;
+      _addressError = null;
+      _pointsError = null;
       _submitting = true;
     });
 
-    final outcome = await ref
-        .read(walletWithdrawControllerProvider)
-        .withdraw(address);
+    final points = int.parse(_pointsController.text.trim());
+    final outcome = await ref.read(walletWithdrawControllerProvider).withdraw(
+      toAddress: address,
+      points: points,
+      mode: _mode.apiValue,
+    );
 
     if (!mounted) return;
     setState(() => _submitting = false);
 
     switch (outcome) {
-      case WithdrawSuccess():
-        Navigator.of(context).pop(true);
+      case WithdrawSuccess(:final transaction):
+        Navigator.of(context).pop(transaction);
       case WithdrawFailure(:final message):
-        setState(() => _inlineError = message);
+        setState(() => _pointsError = message);
     }
   }
 
@@ -103,7 +168,7 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
                 ),
               ),
               const Text(
-                'Retirar a mi wallet',
+                'Retirar puntos',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -112,9 +177,8 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Se retirará tu saldo completo de ${widget.balanceCtc} CTC a tu '
-                'wallet en Polygon Amoy. El movimiento ocurre dentro de la red, '
-                'no convierte a soles.',
+                'Tienes ${widget.pointsBalance} puntos disponibles '
+                '(mínimo ${widget.minWithdrawalPoints} por retiro).',
                 style: const TextStyle(
                   fontSize: 13,
                   color: AppColors.textSecondary,
@@ -123,11 +187,45 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
               ),
               const SizedBox(height: 18),
               AppTextField(
+                label: 'PUNTOS A RETIRAR',
+                controller: _pointsController,
+                errorText: _pointsError,
+                keyboardType: TextInputType.number,
+                prefixIcon: const Icon(
+                  Icons.toll_outlined,
+                  color: AppColors.textTertiary,
+                  size: 18,
+                ),
+                onChanged: (_) {
+                  if (_pointsError != null) setState(() => _pointsError = null);
+                },
+              ),
+              const SizedBox(height: 14),
+              const Text(
+                'MODO DE RETIRO',
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textTertiary,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final mode in WithdrawMode.values) ...[
+                _ModeOption(
+                  mode: mode,
+                  selected: _mode == mode,
+                  onTap: () => setState(() => _mode = mode),
+                ),
+                const SizedBox(height: 8),
+              ],
+              const SizedBox(height: 8),
+              AppTextField(
                 label: 'DIRECCIÓN DE DESTINO',
                 hint: '0x...',
-                controller: _controller,
-                errorText: _inlineError,
-                autofocus: true,
+                controller: _addressController,
+                errorText: _addressError,
                 keyboardType: TextInputType.text,
                 textInputAction: TextInputAction.done,
                 prefixIcon: const Icon(
@@ -136,8 +234,8 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
                   size: 18,
                 ),
                 onChanged: (_) {
-                  if (_inlineError != null) {
-                    setState(() => _inlineError = null);
+                  if (_addressError != null) {
+                    setState(() => _addressError = null);
                   }
                 },
                 onFieldSubmitted: (_) => _submit(),
@@ -149,13 +247,76 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
               ),
               const SizedBox(height: 10),
               const Text(
-                'Verifica la dirección: las transacciones on-chain son '
-                'irreversibles.',
+                'No envíes CTC a Lemon ni a un exchange: no lo reconocen y se '
+                'pierde.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11,
                   color: AppColors.textTertiary,
                   height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ModeOption extends StatelessWidget {
+  final WithdrawMode mode;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ModeOption({
+    required this.mode,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: Key('withdraw-mode-${mode.apiValue}'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color:
+                selected
+                    ? AppColors.primary.withValues(alpha: 0.12)
+                    : AppColors.background.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color:
+                  selected ? AppColors.primary : AppColors.borderSubtle,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                selected
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_off_rounded,
+                size: 18,
+                color: selected ? AppColors.primary : AppColors.textTertiary,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  mode.label,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    color:
+                        selected
+                            ? AppColors.textPrimary
+                            : AppColors.textSecondary,
+                  ),
                 ),
               ),
             ],

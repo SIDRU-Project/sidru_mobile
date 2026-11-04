@@ -11,6 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
 
   # State management
   flutter_riverpod: ^2.5.1
@@ -47,6 +49,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_core: ^4.10.0
   firebase_messaging: ^16.3.0
+  google_sign_in: ^7.2.0
+  google_sign_in_web: ^1.1.0
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -78,6 +83,11 @@ flutter_launcher_icons:
   adaptive_icon_foreground: "assets/images/icon_foreground.png"
   remove_alpha_ios: true
   background_color_ios: "#0A0E1A"
+  web:
+    generate: true
+    image_path: "assets/images/icon_legacy.png"
+    background_color: "#0A0E1A"
+    theme_color: "#0A0E1A"
 
 # ── Splash de arranque (logo sobre el azul de marca) ──
 flutter_native_splash:

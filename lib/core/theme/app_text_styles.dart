@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTextStyles {
-  // ── Display ─────────────────────────────────────────────────────────────────
+  // Display
   static const TextStyle displayLarge = TextStyle(
     fontSize: 30,
     fontWeight: FontWeight.w700,
@@ -17,7 +17,7 @@ class AppTextStyles {
     letterSpacing: -0.4,
   );
 
-  // ── Headline ────────────────────────────────────────────────────────────────
+  // Headline
   static const TextStyle headlineLarge = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w700,
@@ -31,7 +31,7 @@ class AppTextStyles {
     color: AppColors.textPrimary,
   );
 
-  // ── Title ───────────────────────────────────────────────────────────────────
+  // Title
   static const TextStyle titleLarge = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
@@ -44,7 +44,7 @@ class AppTextStyles {
     color: AppColors.textPrimary,
   );
 
-  // ── Body ────────────────────────────────────────────────────────────────────
+  // Body
   static const TextStyle bodyLarge = TextStyle(
     fontSize: 15,
     color: AppColors.textPrimary,
@@ -62,7 +62,7 @@ class AppTextStyles {
     color: AppColors.textSecondary,
   );
 
-  // ── Label mono (UPPERCASE + spacing) ───────────────────────────────────────
+  // Label mono (UPPERCASE + spacing)
   static const TextStyle labelMono = TextStyle(
     fontFamily: 'monospace',
     fontSize: 10,
@@ -71,7 +71,7 @@ class AppTextStyles {
     letterSpacing: 0.8,
   );
 
-  // ── Mono valores ───────────────────────────────────────────────────────────
+  // Mono valores
   static const TextStyle monoLarge = TextStyle(
     fontFamily: 'monospace',
     fontSize: 30,

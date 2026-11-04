@@ -11,6 +11,7 @@ _$SignInResponseImpl _$$SignInResponseImplFromJson(Map<String, dynamic> json) =>
       id: (json['id'] as num).toInt(),
       email: json['email'] as String,
       token: json['token'] as String,
+      newUser: json['newUser'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$SignInResponseImplToJson(
@@ -19,4 +20,5 @@ Map<String, dynamic> _$$SignInResponseImplToJson(
   'id': instance.id,
   'email': instance.email,
   'token': instance.token,
+  'newUser': instance.newUser,
 };

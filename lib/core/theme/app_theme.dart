@@ -7,7 +7,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
 
-      // ── Colores ──────────────────────────────────────────────────────────────
+      // Colores
       scaffoldBackgroundColor: AppColors.background,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary,
@@ -21,7 +21,7 @@ class AppTheme {
         surfaceContainerHighest: AppColors.surfaceElevated,
       ),
 
-      // ── Card ─────────────────────────────────────────────────────────────────
+      // Card
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
@@ -32,7 +32,7 @@ class AppTheme {
         margin: EdgeInsets.zero,
       ),
 
-      // ── AppBar ───────────────────────────────────────────────────────────────
+      // AppBar
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
@@ -46,7 +46,7 @@ class AppTheme {
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
 
-      // ── Bottom Navigation ────────────────────────────────────────────────────
+      // Bottom Navigation
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
         selectedItemColor: AppColors.primary,
@@ -60,7 +60,7 @@ class AppTheme {
         unselectedLabelStyle: TextStyle(fontSize: 11),
       ),
 
-      // ── Input ────────────────────────────────────────────────────────────────
+      // Input
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
@@ -98,7 +98,7 @@ class AppTheme {
         ),
       ),
 
-      // ── SnackBar ─────────────────────────────────────────────────────────────
+      // SnackBar
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.surfaceElevated,
         contentTextStyle: const TextStyle(color: AppColors.textPrimary),
@@ -107,19 +107,19 @@ class AppTheme {
         insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
 
-      // ── Divider ──────────────────────────────────────────────────────────────
+      // Divider
       dividerTheme: const DividerThemeData(
         color: AppColors.borderSubtle,
         thickness: 1,
         space: 1,
       ),
 
-      // ── Progress indicator ───────────────────────────────────────────────────
+      // Progress indicator
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.primary,
       ),
 
-      // ── Texto base ───────────────────────────────────────────────────────────
+      // Texto base
       textTheme: const TextTheme(
         displayLarge: TextStyle(color: AppColors.textPrimary),
         displayMedium: TextStyle(color: AppColors.textPrimary),

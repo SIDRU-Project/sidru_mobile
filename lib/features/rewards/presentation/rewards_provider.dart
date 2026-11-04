@@ -8,7 +8,7 @@ import '../data/models/reward.dart';
 import '../data/reward_api.dart';
 import '../data/reward_repository.dart';
 
-// ── Cadena de dependencias ────────────────────────────────────────────────────
+// Cadena de dependencias
 
 final rewardApiProvider = Provider<RewardApi>((ref) {
   return RewardApi(ref.watch(apiClientProvider));
@@ -18,7 +18,7 @@ final rewardRepositoryProvider = Provider<RewardRepository>((ref) {
   return RewardRepository(ref.watch(rewardApiProvider));
 });
 
-// ── Catálogo de recompensas ───────────────────────────────────────────────────
+// Catálogo de recompensas
 
 final rewardsListProvider =
     AsyncNotifierProvider<RewardsNotifier, List<Reward>>(
@@ -27,7 +27,13 @@ final rewardsListProvider =
 
 class RewardsNotifier extends AsyncNotifier<List<Reward>> {
   @override
-  Future<List<Reward>> build() async => _load();
+  Future<List<Reward>> build() async {
+    final (authenticated, _) = ref.watch(
+      authNotifierProvider.select((a) => (a.state.isAuthenticated, a.sessionEpoch)),
+    );
+    if (!authenticated) return const [];
+    return _load();
+  }
 
   Future<List<Reward>> _load() async {
     try {
@@ -47,16 +53,20 @@ class RewardsNotifier extends AsyncNotifier<List<Reward>> {
   }
 }
 
-// ── Detalle de recompensa ─────────────────────────────────────────────────────
+// Detalle de recompensa
 
 final rewardDetailProvider = FutureProvider.family<Reward, int>((
   ref,
   id,
 ) async {
+  final (authenticated, _) = ref.watch(
+    authNotifierProvider.select((a) => (a.state.isAuthenticated, a.sessionEpoch)),
+  );
+  if (!authenticated) throw StateError('sin sesión');
   return ref.read(rewardRepositoryProvider).getReward(id);
 });
 
-// ── Historial de transacciones ────────────────────────────────────────────────
+// Historial de transacciones
 
 final transactionsProvider =
     AsyncNotifierProvider<TransactionsNotifier, List<PointTransaction>>(
@@ -65,7 +75,13 @@ final transactionsProvider =
 
 class TransactionsNotifier extends AsyncNotifier<List<PointTransaction>> {
   @override
-  Future<List<PointTransaction>> build() async => _load();
+  Future<List<PointTransaction>> build() async {
+    final (authenticated, _) = ref.watch(
+      authNotifierProvider.select((a) => (a.state.isAuthenticated, a.sessionEpoch)),
+    );
+    if (!authenticated) return const [];
+    return _load();
+  }
 
   Future<List<PointTransaction>> _load() async {
     try {
@@ -88,7 +104,7 @@ class TransactionsNotifier extends AsyncNotifier<List<PointTransaction>> {
   }
 }
 
-// ── Canje de recompensa ───────────────────────────────────────────────────────
+// Canje de recompensa
 
 enum RedeemErrorKind { conflict, network, server }
 

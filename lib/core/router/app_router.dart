@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../storage/secure_storage.dart';
 import '../theme/app_colors.dart';
 import '../../features/auth/presentation/auth_provider.dart';
+import '../../features/auth/presentation/complete_profile_screen.dart';
+import '../../features/auth/presentation/google_callback_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
@@ -32,10 +34,10 @@ import '../../features/impact/presentation/impact_screen.dart';
 import '../../shared/widgets/sidru_bottom_nav.dart';
 import 'route_names.dart';
 
-// ── Provider compartido de SecureStorage ─────────────────────────────────────
+// Provider compartido de SecureStorage
 final secureStorageProvider = Provider<SecureStorage>((_) => SecureStorage());
 
-// ── GoRouter ─────────────────────────────────────────────────────────────────
+// GoRouter
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   // OJO: se observa `.notifier`, NO `ref.watch(authNotifierProvider)`. Observar el
@@ -59,9 +61,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isPublicRoute =
           loc == RouteNames.onboarding ||
           loc == RouteNames.login ||
-          loc == RouteNames.register;
+          loc == RouteNames.register ||
+          loc == RouteNames.googleCallback;
       if (!isAuth && !isPublicRoute) return RouteNames.onboarding;
-      if (isAuth && isPublicRoute) return RouteNames.home;
+      // Cuenta nueva por Google: una sola vez a completar el perfil.
+      // El callback decide solo su destino: no se redirige mientras valida el token.
+      if (isAuth && isPublicRoute && loc != RouteNames.googleCallback) {
+        return authNotifier.pendingProfileCompletion
+            ? RouteNames.completeProfile
+            : RouteNames.home;
+      }
       return null;
     },
     routes: [
@@ -75,7 +84,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const RegisterScreen(),
       ),
 
-      // ── Tabs principales (con bottom navigation) ────────────────────────
+      GoRoute(
+        path: RouteNames.googleCallback,
+        builder: (_, __) => const GoogleCallbackScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.completeProfile,
+        builder: (_, __) => const CompleteProfileScreen(),
+      ),
+
+      // Tabs principales (con bottom navigation)
       ShellRoute(
         builder: (_, __, child) => _AppShell(child: child),
         routes: [
@@ -98,7 +116,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // ── Sub-páginas fullscreen (sin bottom nav, como el prototipo) ──────
+      // Sub-páginas fullscreen (sin bottom nav, como el prototipo)
       GoRoute(
         path: RouteNames.wallet,
         builder: (_, __) => const WalletScreen(),
@@ -138,7 +156,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ),
       ),
 
-      // ── Flujo QR (fullscreen, fuera del shell) ──────────────────────────
+      // Flujo QR (fullscreen, fuera del shell)
       GoRoute(
         path: RouteNames.scan,
         builder: (_, __) => const QrScannerScreen(),
@@ -185,7 +203,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-// ── Shell con SidruBottomNav flotante ─────────────────────────────────────────
+// Shell con SidruBottomNav flotante
 
 class _AppShell extends ConsumerWidget {
   final Widget child;

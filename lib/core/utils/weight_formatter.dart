@@ -1,20 +1,17 @@
 class WeightFormatter {
-  /// Convierte peso de backend a kilogramos.
-  ///
-  /// La API histórica documentaba `weightGrams` como gramos, por ejemplo 840.0.
-  /// El backend actual devuelve valores pequeños como 0.1, que representan kg.
-  /// Para evitar mostrar "0.00 kg", valores menores a 10 se interpretan como kg.
-  static double backendWeightToKg(double weight) {
-    if (weight.abs() < 10) return weight;
-    return weight / 1000;
-  }
-
-  /// Convierte gramos a texto legible.
+  /// El backend SIEMPRE envía `weightGrams` en gramos (p. ej. 6.0, 48.5, 840.0,
+  /// hasta 50000 = 50 kg). Muestra la unidad correcta: gramos por debajo de 1 kg
+  /// y kilogramos a partir de 1 kg. Así una sesión de 6 g se ve "6 g", no "6.00 kg".
   static String fromGrams(double grams) {
-    return '${backendWeightToKg(grams).toStringAsFixed(2)} kg';
+    if (grams.abs() < 1000) {
+      // "6 g" si es entero; "48.5 g" si tiene decimales.
+      final isWhole = grams == grams.roundToDouble();
+      return '${isWhole ? grams.toStringAsFixed(0) : grams.toStringAsFixed(1)} g';
+    }
+    return '${(grams / 1000).toStringAsFixed(2)} kg';
   }
 
-  /// Siempre en kg con 2 decimales: "0.84 kg"
-  static String gramsToKg(double grams) =>
-      '${backendWeightToKg(grams).toStringAsFixed(2)} kg';
+  /// Alias de compatibilidad (lo usan las pantallas de sesiones). Ahora elige
+  /// automáticamente g o kg en lugar de forzar siempre "kg".
+  static String gramsToKg(double grams) => fromGrams(grams);
 }

@@ -24,6 +24,7 @@ mixin _$SignInResponse {
   int get id => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
   String get token => throw _privateConstructorUsedError;
+  bool get newUser => throw _privateConstructorUsedError;
 
   /// Serializes this SignInResponse to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -42,7 +43,7 @@ abstract class $SignInResponseCopyWith<$Res> {
     $Res Function(SignInResponse) then,
   ) = _$SignInResponseCopyWithImpl<$Res, SignInResponse>;
   @useResult
-  $Res call({int id, String email, String token});
+  $Res call({int id, String email, String token, bool newUser});
 }
 
 /// @nodoc
@@ -59,7 +60,12 @@ class _$SignInResponseCopyWithImpl<$Res, $Val extends SignInResponse>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? id = null, Object? email = null, Object? token = null}) {
+  $Res call({
+    Object? id = null,
+    Object? email = null,
+    Object? token = null,
+    Object? newUser = null,
+  }) {
     return _then(
       _value.copyWith(
             id:
@@ -77,6 +83,11 @@ class _$SignInResponseCopyWithImpl<$Res, $Val extends SignInResponse>
                     ? _value.token
                     : token // ignore: cast_nullable_to_non_nullable
                         as String,
+            newUser:
+                null == newUser
+                    ? _value.newUser
+                    : newUser // ignore: cast_nullable_to_non_nullable
+                        as bool,
           )
           as $Val,
     );
@@ -92,7 +103,7 @@ abstract class _$$SignInResponseImplCopyWith<$Res>
   ) = __$$SignInResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int id, String email, String token});
+  $Res call({int id, String email, String token, bool newUser});
 }
 
 /// @nodoc
@@ -108,7 +119,12 @@ class __$$SignInResponseImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? id = null, Object? email = null, Object? token = null}) {
+  $Res call({
+    Object? id = null,
+    Object? email = null,
+    Object? token = null,
+    Object? newUser = null,
+  }) {
     return _then(
       _$SignInResponseImpl(
         id:
@@ -126,6 +142,11 @@ class __$$SignInResponseImplCopyWithImpl<$Res>
                 ? _value.token
                 : token // ignore: cast_nullable_to_non_nullable
                     as String,
+        newUser:
+            null == newUser
+                ? _value.newUser
+                : newUser // ignore: cast_nullable_to_non_nullable
+                    as bool,
       ),
     );
   }
@@ -138,6 +159,7 @@ class _$SignInResponseImpl implements _SignInResponse {
     required this.id,
     required this.email,
     required this.token,
+    this.newUser = false,
   });
 
   factory _$SignInResponseImpl.fromJson(Map<String, dynamic> json) =>
@@ -149,10 +171,13 @@ class _$SignInResponseImpl implements _SignInResponse {
   final String email;
   @override
   final String token;
+  @override
+  @JsonKey()
+  final bool newUser;
 
   @override
   String toString() {
-    return 'SignInResponse(id: $id, email: $email, token: $token)';
+    return 'SignInResponse(id: $id, email: $email, token: $token, newUser: $newUser)';
   }
 
   @override
@@ -162,12 +187,13 @@ class _$SignInResponseImpl implements _SignInResponse {
             other is _$SignInResponseImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.email, email) || other.email == email) &&
-            (identical(other.token, token) || other.token == token));
+            (identical(other.token, token) || other.token == token) &&
+            (identical(other.newUser, newUser) || other.newUser == newUser));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, email, token);
+  int get hashCode => Object.hash(runtimeType, id, email, token, newUser);
 
   /// Create a copy of SignInResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -191,6 +217,7 @@ abstract class _SignInResponse implements SignInResponse {
     required final int id,
     required final String email,
     required final String token,
+    final bool newUser,
   }) = _$SignInResponseImpl;
 
   factory _SignInResponse.fromJson(Map<String, dynamic> json) =
@@ -202,6 +229,8 @@ abstract class _SignInResponse implements SignInResponse {
   String get email;
   @override
   String get token;
+  @override
+  bool get newUser;
 
   /// Create a copy of SignInResponse
   /// with the given fields replaced by the non-null parameter values.

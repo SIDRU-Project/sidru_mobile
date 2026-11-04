@@ -10,7 +10,9 @@ _$SignUpResponseImpl _$$SignUpResponseImplFromJson(Map<String, dynamic> json) =>
     _$SignUpResponseImpl(
       id: (json['id'] as num).toInt(),
       email: json['email'] as String,
-      token: json['token'] as String,
+      roles:
+          (json['roles'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+          const <String>[],
     );
 
 Map<String, dynamic> _$$SignUpResponseImplToJson(
@@ -18,5 +20,5 @@ Map<String, dynamic> _$$SignUpResponseImplToJson(
 ) => <String, dynamic>{
   'id': instance.id,
   'email': instance.email,
-  'token': instance.token,
+  'roles': instance.roles,
 };

@@ -11,6 +11,7 @@ class SecureStorage {
     : _storage = const FlutterSecureStorage(
         aOptions: AndroidOptions(encryptedSharedPreferences: true),
         iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+        webOptions: WebOptions(dbName: 'sidru', publicKey: 'sidru'),
       );
 
   Future<void> saveToken(String token) =>
@@ -21,4 +22,8 @@ class SecureStorage {
   Future<void> deleteToken() => _storage.delete(key: _tokenKey);
 
   Future<bool> hasToken() async => (await getToken()) != null;
+
+  /// Borra todo lo que pertenece al usuario: el JWT y los cachés por usuario
+  /// (p. ej. `wallet_last_snapshot` de la wallet).
+  Future<void> clearSession() => _storage.deleteAll();
 }

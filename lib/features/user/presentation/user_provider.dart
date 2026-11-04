@@ -6,7 +6,7 @@ import '../data/models/user_profile.dart';
 import '../data/user_api.dart';
 import '../data/user_repository.dart';
 
-// ── Cadena de dependencias ────────────────────────────────────────────────────
+// Cadena de dependencias
 
 final userApiProvider = Provider<UserApi>((ref) {
   return UserApi(ref.watch(apiClientProvider));
@@ -16,7 +16,7 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
   return UserRepository(ref.watch(userApiProvider));
 });
 
-// ── Notifier ──────────────────────────────────────────────────────────────────
+// Notifier
 
 /// Gestiona el estado del perfil del usuario autenticado.
 /// `build()` se llama automáticamente al observar el provider.
@@ -29,10 +29,14 @@ final userNotifierProvider = AsyncNotifierProvider<UserNotifier, UserProfile?>(
 class UserNotifier extends AsyncNotifier<UserProfile?> {
   @override
   Future<UserProfile?> build() async {
+    final (authenticated, _) = ref.watch(
+      authNotifierProvider.select((a) => (a.state.isAuthenticated, a.sessionEpoch)),
+    );
+    if (!authenticated) return null;
     return _fetchProfile();
   }
 
-  // ── Carga de perfil ───────────────────────────────────────────────────────
+  // Carga de perfil
 
   Future<UserProfile?> _fetchProfile() async {
     try {
@@ -48,7 +52,7 @@ class UserNotifier extends AsyncNotifier<UserProfile?> {
     }
   }
 
-  // ── Actualizar perfil ─────────────────────────────────────────────────────
+  // Actualizar perfil
 
   /// Actualiza los campos editables del perfil.
   /// Retorna null si fue exitoso, o el mensaje de error si falló.
@@ -80,14 +84,14 @@ class UserNotifier extends AsyncNotifier<UserProfile?> {
     }
   }
 
-  // ── Refresco manual ───────────────────────────────────────────────────────
+  // Refresco manual
 
   Future<void> refresh() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(_fetchProfile);
   }
 
-  // ── Mapeo de errores ──────────────────────────────────────────────────────
+  // Mapeo de errores
 
   String _mapUpdateError(ApiException e) => switch (e.type) {
     ApiErrorType.networkError => 'Sin conexión. Verifica tu internet.',

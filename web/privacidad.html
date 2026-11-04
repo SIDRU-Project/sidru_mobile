@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Política de privacidad de SIDRU (Sistema de Incentivos Digitales para el Reciclaje Urbano).">
+<meta name="theme-color" content="#0A0E1A">
+<title>Política de privacidad — SIDRU</title>
+<style>
+  :root { --fondo:#0A0E1A; --texto:#1B2230; --suave:#566073; --linea:#D9DEE8; --acento:#007C91; --papel:#FFFFFF; --gris:#F3F5F9; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin:0; background:var(--gris); color:var(--texto); font:16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  header { background:var(--fondo); color:#fff; padding:28px 16px; }
+  header div, main { max-width:760px; margin:0 auto; }
+  header .marca { font-size:14px; letter-spacing:.12em; color:#7FE9F7; font-weight:700; }
+  header h1 { margin:6px 0 4px; font-size:26px; line-height:1.25; }
+  header p { margin:0; color:#B8C0D0; font-size:14px; }
+  main { background:var(--papel); padding:24px 16px 40px; }
+  @media (min-width:800px) { main { margin:24px auto; padding:32px 40px 48px; border-radius:12px; border:1px solid var(--linea); } }
+  h2 { font-size:20px; margin:32px 0 8px; padding-top:8px; border-top:1px solid var(--linea); line-height:1.3; }
+  h2:first-of-type { border-top:0; margin-top:8px; }
+  h3 { font-size:16px; margin:20px 0 6px; }
+  p, ul, ol { margin:0 0 12px; }
+  ul, ol { padding-left:22px; }
+  li { margin-bottom:6px; }
+  a { color:var(--acento); overflow-wrap:anywhere; }
+  code { background:var(--gris); padding:1px 5px; border-radius:4px; font-size:.92em; overflow-wrap:anywhere; }
+  .tabla { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 0 16px; border:1px solid var(--linea); border-radius:8px; }
+  table { border-collapse:collapse; width:100%; min-width:520px; font-size:14.5px; }
+  th, td { text-align:left; vertical-align:top; padding:9px 12px; border-bottom:1px solid var(--linea); }
+  th { background:var(--gris); font-weight:700; }
+  tr:last-child td { border-bottom:0; }
+  footer { max-width:760px; margin:0 auto; padding:0 16px 32px; color:var(--suave); font-size:13px; }
+  @media (min-width:800px) { footer { padding:0 0 32px; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="marca">SIDRU</div>
+    <h1>Política de privacidad</h1>
+    <p>Última actualización: 2 de octubre de 2026</p>
+  </div>
+</header>
+<main>
+
+<h2>1. Quiénes somos</h2>
+<p>SIDRU (Sistema de Incentivos Digitales para el Reciclaje Urbano) es una aplicación desarrollada como proyecto de capstone de la Universidad Peruana de Ciencias Aplicadas (UPC). Se usa como aplicación Android o desde el navegador del celular en <a href="https://sidru.adrianocruz.dev">https://sidru.adrianocruz.dev</a>. Permite al ciudadano depositar tapas plásticas en un contenedor inteligente (Smart Bin), acumular puntos por el material reciclado y retirarlos como tokens digitales CTC a una billetera propia.</p>
+<ul>
+  <li><strong>Responsable del tratamiento:</strong> Adriano Cruz</li>
+  <li><strong>Correo de contacto:</strong> <a href="mailto:adrianocruzpalomino04@gmail.com">adrianocruzpalomino04@gmail.com</a></li>
+</ul>
+
+<h2>2. Qué datos recopilamos</h2>
+
+<h3>2.1 Datos que nos proporcionas al registrarte</h3>
+<div class="tabla"><table>
+  <thead><tr><th>Dato</th><th>Obligatorio</th><th>Para qué se usa</th></tr></thead>
+  <tbody>
+    <tr><td>Nombre completo</td><td>Sí</td><td>Identificarte dentro de la aplicación</td></tr>
+    <tr><td>Correo electrónico</td><td>Sí</td><td>Es tu credencial de acceso y el identificador de tu cuenta</td></tr>
+    <tr><td>Contraseña</td><td>Sí, salvo si entras con Google</td><td>Autenticación. Se almacena <strong>cifrada con BCrypt</strong>, nunca en texto plano</td></tr>
+    <tr><td>Teléfono</td><td>No</td><td>Contacto opcional</td></tr>
+    <tr><td>Distrito</td><td>No</td><td>Estadísticas agregadas de reciclaje por zona</td></tr>
+  </tbody>
+</table></div>
+
+<h3>2.1.1 Si entras con Google</h3>
+<p>Si eliges <strong>«Continuar con Google»</strong>, quien verifica tu identidad es Google. Nosotros recibimos de Google solo:</p>
+<div class="tabla"><table>
+  <thead><tr><th>Dato</th><th>Para qué se usa</th></tr></thead>
+  <tbody>
+    <tr><td>Nombre</td><td>Mostrarlo en tu perfil (puedes cambiarlo)</td></tr>
+    <tr><td>Correo electrónico</td><td>Identificar tu cuenta; si ya tenías una cuenta SIDRU con ese mismo correo verificado, se vinculan</td></tr>
+    <tr><td>Identificador de tu cuenta de Google</td><td>Reconocerte en los siguientes accesos aunque cambies de correo</td></tr>
+  </tbody>
+</table></div>
+<p><strong>No</strong> recibimos tu contraseña de Google, tus contactos, tus archivos ni ningún otro dato de tu cuenta de Google. No publicamos nada en tu nombre. Puedes revocar el acceso de SIDRU en cualquier momento desde <code>myaccount.google.com/permissions</code>; tu cuenta SIDRU y tus puntos se conservan.</p>
+
+<h3>2.2 Datos que se generan por tu uso de la aplicación</h3>
+<ul>
+  <li><strong>Sesiones de reciclaje:</strong> fecha, peso depositado en gramos, cantidad de tapas y puntos obtenidos en cada depósito.</li>
+  <li><strong>Saldo de puntos y canjes:</strong> los puntos acumulados, las recompensas canjeadas y el historial de movimientos de puntos.</li>
+  <li><strong>Dirección de billetera de retiro:</strong> cuando decides retirar puntos, <strong>tú nos indicas</strong> la dirección pública de tu propia billetera (por ejemplo, MetaMask) en la red Polygon. La aplicación <strong>no</strong> crea ni custodia billeteras ni claves privadas por ti. Guardamos esa dirección junto con cada retiro para poder acreditarlo y mostrártelo en tu historial. Es un dato público de la red; no contiene datos personales ni te identifica por sí solo.</li>
+  <li><strong>Retiros:</strong> para cada retiro, la cantidad de puntos, la modalidad (CTC o USDC), la dirección de destino, el estado y el identificador (hash) de la transacción en Polygon.</li>
+  <li><strong>Token de notificaciones (FCM):</strong> solo en la aplicación Android. Es el identificador que asigna Google a tu instalación para enviarte avisos cuando se acreditan tus puntos o se confirma un retiro. La versión web no envía notificaciones.</li>
+</ul>
+
+<h3>2.3 Cámara</h3>
+<p>La aplicación solicita permiso de <strong>cámara</strong> con un único propósito: <strong>escanear el código QR</strong> que muestra el contenedor inteligente al cerrar tu sesión de reciclaje.</p>
+<ul>
+  <li>El procesamiento del código se hace <strong>en tu dispositivo</strong>.</li>
+  <li><strong>No</strong> tomamos fotografías, <strong>no</strong> grabamos video y <strong>no</strong> enviamos imágenes a ningún servidor. Solo se transmite el texto del código QR leído.</li>
+  <li>Puedes denegar el permiso: la aplicación seguirá funcionando y podrás ingresar el código de forma manual.</li>
+</ul>
+
+<h3>2.4 Datos que NO recopilamos</h3>
+<p>No recopilamos ubicación geográfica, contactos, archivos, historial de navegación, identificadores publicitarios ni datos biométricos.</p>
+
+<h2>3. Para qué usamos tus datos</h2>
+<ol>
+  <li>Crear y mantener tu cuenta, y autenticarte en cada inicio de sesión.</li>
+  <li>Registrar tus depósitos de material reciclable y calcular los puntos que te corresponden.</li>
+  <li>Mostrar tu saldo de puntos, procesar los canjes de recompensas y ejecutar los retiros de puntos a tokens CTC o USDC hacia la billetera que indiques.</li>
+  <li>Enviarte notificaciones sobre la acreditación de tus puntos y el estado de tus retiros (solo si las autorizas).</li>
+  <li>Elaborar estadísticas <strong>agregadas y anónimas</strong> de impacto ambiental (peso total reciclado, CO₂ estimado que se evita). Estas estadísticas no permiten identificarte.</li>
+</ol>
+<p>No usamos tus datos para publicidad, ni elaboramos perfiles comerciales, ni tomamos decisiones automatizadas que te afecten legalmente.</p>
+
+<h2>4. Con quién compartimos tus datos</h2>
+<p><strong>No vendemos ni cedemos tus datos personales.</strong> Los únicos terceros que intervienen son proveedores de infraestructura necesarios para que la aplicación funcione:</p>
+<div class="tabla"><table>
+  <thead><tr><th>Proveedor</th><th>Qué recibe</th><th>Para qué</th></tr></thead>
+  <tbody>
+    <tr><td>Microsoft Azure</td><td>Todos los datos de tu cuenta y sesiones</td><td>Alojamiento del servidor y la base de datos</td></tr>
+    <tr><td>Google Firebase (FCM)</td><td>El token de notificaciones de tu dispositivo (solo Android)</td><td>Entrega de notificaciones push</td></tr>
+    <tr><td>Google (inicio de sesión)</td><td>Solo si eliges «Continuar con Google»: Google sabe que entraste a SIDRU</td><td>Verificar tu identidad. Nos devuelve tu nombre, correo e identificador</td></tr>
+    <tr><td>Red blockchain Polygon</td><td>Solo al retirar: la dirección de billetera que indicaste y el monto de tokens</td><td>Emisión de los tokens CTC (o pago en USDC) a tu billetera</td></tr>
+  </tbody>
+</table></div>
+<p><strong>Importante sobre la blockchain:</strong> las sesiones de reciclaje y tu saldo de puntos se guardan únicamente en nuestro servidor; <strong>no se publica nada en la blockchain hasta que tú decides retirar</strong>. Las transacciones de retiro registradas en la red Polygon son <strong>públicas y permanentes por diseño</strong>, y no pueden borrarse ni modificarse. Lo que queda registrado es una dirección alfanumérica y un monto: <strong>no</strong> tu nombre, ni tu correo, ni ningún otro dato que te identifique directamente.</p>
+
+<h2>5. Cómo protegemos tus datos</h2>
+<ul>
+  <li>Toda la comunicación entre la aplicación y el servidor viaja <strong>cifrada con HTTPS (TLS)</strong>.</li>
+  <li>Las contraseñas se almacenan con el algoritmo <strong>BCrypt</strong> con sal única por usuario. Nadie, incluido el equipo de desarrollo, puede leerlas.</li>
+  <li>El token de sesión se guarda en el <strong>almacenamiento cifrado</strong> del sistema operativo de tu dispositivo. En la versión web se guarda cifrado en el almacenamiento de tu navegador y se borra al cerrar sesión.</li>
+  <li>Las cuentas creadas con Google no tienen una contraseña que alguien conozca. Para entrar hay que pasar por Google.</li>
+  <li>El acceso administrativo a la base de datos está restringido y la base de datos no es accesible desde internet.</li>
+</ul>
+<p>Ningún sistema es infalible. Si detectamos una vulneración que afecte a tus datos, te lo comunicaremos por el correo asociado a tu cuenta.</p>
+
+<h2>6. Cuánto tiempo conservamos tus datos</h2>
+<p>Conservamos los datos de tu cuenta mientras la mantengas activa. Si solicitas la eliminación, borramos tu cuenta y tus datos personales en un plazo máximo de <strong>30 días</strong>.</p>
+<p>Los retiros ya registrados en la blockchain <strong>no pueden eliminarse</strong>, por la naturaleza técnica de esa tecnología. Tras borrar tu cuenta, esos registros quedan desvinculados de tu identidad: subsiste una dirección pública sin ningún dato personal asociado. Los tokens que ya recibiste en tu billetera son tuyos y no se ven afectados por la eliminación de la cuenta; los puntos no retirados se pierden al borrarla.</p>
+
+<h2>7. Tus derechos</h2>
+<p>Conforme a la <strong>Ley N.° 29733, Ley de Protección de Datos Personales del Perú</strong>, y su reglamento, puedes ejercer en cualquier momento tus derechos de:</p>
+<ul>
+  <li><strong>Acceso:</strong> saber qué datos tuyos tenemos.</li>
+  <li><strong>Rectificación:</strong> corregir datos inexactos (también desde la pantalla Perfil de la app).</li>
+  <li><strong>Cancelación:</strong> solicitar la eliminación de tu cuenta y tus datos.</li>
+  <li><strong>Oposición:</strong> oponerte a un tratamiento concreto.</li>
+</ul>
+<p>Para ejercerlos, escribe a <a href="mailto:adrianocruzpalomino04@gmail.com">adrianocruzpalomino04@gmail.com</a>. Responderemos en un plazo máximo de 20 días hábiles. Si consideras que no atendimos tu solicitud, puedes presentar un reclamo ante la <strong>Autoridad Nacional de Protección de Datos Personales</strong> del Ministerio de Justicia y Derechos Humanos.</p>
+
+<h2>8. Eliminación de la cuenta</h2>
+<p>Puedes solicitar la eliminación de tu cuenta escribiendo a <a href="mailto:adrianocruzpalomino04@gmail.com">adrianocruzpalomino04@gmail.com</a> desde el correo con el que te registraste.</p>
+
+<h2>9. Menores de edad</h2>
+<p>La aplicación no está dirigida a menores de 14 años. No recopilamos conscientemente datos de menores de esa edad. Si detectamos una cuenta en esa situación, la eliminaremos.</p>
+
+<h2>10. Naturaleza de los tokens CTC</h2>
+<p>Los tokens <strong>CTC («Chapa Tu Cripto»)</strong> son un incentivo por reciclar dentro del programa SIDRU y <strong>tienen valor económico real</strong>:</p>
+<ul>
+  <li><strong>Puntos.</strong> Cada depósito acredita puntos en tu cuenta según el peso reciclado. Los puntos no son un token ni existen en la blockchain: son un saldo en nuestro servidor.</li>
+  <li><strong>Paridad.</strong> 100 puntos equivalen a 100 CTC y a <strong>S/ 1.00</strong> (un sol peruano). Los CTC están respaldados uno a uno por una reserva en USDC (una moneda estable ligada al dólar) en la red Polygon, y pueden redimirse a la par por USDC.</li>
+  <li><strong>Retiro.</strong> Puedes retirar tus puntos a partir de un mínimo de <strong>500 puntos (S/ 5.00)</strong>, en dos modalidades: recibir <strong>CTC</strong> en tu propia billetera, o recibir directamente <strong>USDC</strong> desde la reserva. Cada retiro se ejecuta como una transacción en Polygon y no puede revertirse una vez confirmada.</li>
+  <li><strong>Tu billetera, tu responsabilidad.</strong> SIDRU no custodia tus claves privadas ni puede recuperar tokens enviados a una dirección equivocada. Verifica la dirección antes de confirmar un retiro.</li>
+  <li><strong>Programa piloto.</strong> SIDRU es un piloto académico. El tipo de cambio sol/dólar que usa la paridad puede actualizarse, y el programa puede suspender los retiros temporalmente si la reserva necesita recargarse; en ese caso tu retiro queda en espera, no se pierde.</li>
+  <li>SIDRU no es un exchange ni una billetera de criptomonedas, no presta servicios financieros a terceros y no ofrece rendimientos ni inversión.</li>
+</ul>
+
+<h2>11. Cambios en esta política</h2>
+<p>Si modificamos esta política, publicaremos la nueva versión en esta misma dirección y actualizaremos la fecha del encabezado. Los cambios relevantes se avisarán además dentro de la aplicación.</p>
+
+<h2>12. Contacto</h2>
+<p><a href="mailto:adrianocruzpalomino04@gmail.com">adrianocruzpalomino04@gmail.com</a></p>
+
+</main>
+<footer>SIDRU — <a href="https://sidru.adrianocruz.dev">sidru.adrianocruz.dev</a></footer>
+</body>
+</html>

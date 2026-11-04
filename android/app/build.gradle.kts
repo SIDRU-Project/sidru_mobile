@@ -24,7 +24,9 @@ if (hasReleaseKeystore) {
 
 android {
     namespace = "com.sidru.sidru_mobile"
-    compileSdk = flutter.compileSdkVersion
+    // Fijo en 36: mobile_scanner exige compilar contra SDK 36. Las versiones de
+    // compilación son retrocompatibles, así que subirla no afecta a minSdk/targetSdk.
+    compileSdk = 36
     // Fijo al NDK que requieren los plugins (firebase, secure_storage, scanner...).
     // Son retrocompatibles; usar el más alto evita el warning de NDK mixto.
     ndkVersion = "27.0.12077973"
@@ -39,14 +41,15 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // Identidad de la app en Google Play. NO cambiar tras la primera publicación:
+        // Play la fija para siempre.
         applicationId = "com.sidru.sidru_mobile"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         // minSdk fijo en 26 (Android 8.0+): requisito del proyecto y piso de los
         // plugins Firebase (firebase_core/messaging exigen minSdk >= 23).
         minSdk = 26
-        targetSdk = flutter.targetSdkVersion
+        // Fijo en 36: desde el 31-08-2026 Google Play exige que las apps nuevas
+        // apunten a Android 16 (API 36). Flutter 3.29 aún trae 35 por defecto.
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
