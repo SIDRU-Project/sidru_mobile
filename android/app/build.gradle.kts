@@ -3,12 +3,17 @@ import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
-    // START: FlutterFire Configuration
-    id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// FlutterFire: el plugin de Google Services solo se aplica si existe
+// android/app/google-services.json. Ese archivo no está versionado, así que en el CI
+// (y en cualquier clon limpio) el build fallaba. La app no lo necesita para arrancar:
+// Firebase se inicializa desde Dart con DefaultFirebaseOptions (lib/firebase_options.dart).
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
 }
 
 // Firma de release (US-34). Las credenciales viven en android/key.properties
