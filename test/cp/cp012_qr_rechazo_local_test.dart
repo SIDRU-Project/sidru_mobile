@@ -1,8 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sidru_mobile/features/sessions/data/models/recycling_session.dart';
 import 'package:sidru_mobile/features/sessions/data/models/smart_bin.dart';
 import 'package:sidru_mobile/features/sessions/data/session_repository.dart';
+import 'package:sidru_mobile/features/sessions/presentation/scan/scan_error_screen.dart';
 import 'package:sidru_mobile/features/sessions/presentation/session_provider.dart';
 import 'package:sidru_mobile/features/sessions/utils/qr_token_parser.dart';
 
@@ -114,5 +116,15 @@ void main() {
       expect(QrTokenParser.parse('texto con espacios'), isNull);
       expect(QrTokenParser.parse(null), isNull);
     });
+  });
+
+  testWidgets('CP012 - Paso 2: la pantalla muestra "Código no reconocido" (H-04)',
+      (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: ScanErrorScreen(type: ScanErrorType.invalid)),
+    );
+
+    expect(find.text('Código no reconocido'), findsOneWidget);
+    expect(find.text('QR no válido'), findsNothing);
   });
 }

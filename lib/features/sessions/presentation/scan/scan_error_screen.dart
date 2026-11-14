@@ -16,7 +16,8 @@ class ScanErrorScreen extends StatelessWidget {
     ScanErrorType.invalid => const _ErrorConfig(
       icon: Icons.qr_code_2_rounded,
       color: AppColors.error,
-      title: 'QR no válido',
+      // Texto exigido por CP012 / US-19 esc. 2 (hallazgo H-04, pruebas cruzadas).
+      title: 'Código no reconocido',
       message:
           'Este código no corresponde a ninguna sesión de SIDRU. '
           'Verifica que escaneaste el QR del Smart Bin.',
